@@ -8,9 +8,10 @@ import "leaflet/dist/leaflet.css";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
-import {loadCSV} from './modules/utils';
+import { loadCSV } from './modules/utils';
 import "leaflet-polylinedecorator"
-import {getRoute} from './modules/getRoute'
+import { getRoute } from './modules/getRoute'
+import CameraControlBtnGroup from './components/CameraControlBtnGroup/CameraControlBtnGroup';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -38,8 +39,8 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(lat1 * Math.PI / 180) *
-      Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c; // 거리 (km)
 }
@@ -103,11 +104,11 @@ function FlyToLocation({ position }) {
 
 function getDayType() {
   const today = new Date();
-  const day = today.getDay(); 
+  const day = today.getDay();
   // 0: 일요일, 1: 월요일, ..., 5: 금요일, 6: 토요일
 
   if (day === 6) return "토요일";
-  if (day >= 1 && day <= 5) return "평일"; 
+  if (day >= 1 && day <= 5) return "평일";
   if (day === 0) return "일요일"; // 필요하면 추가
 }
 
@@ -130,9 +131,9 @@ function LocateButton({ onLocation, getRoad, setMyPos, savedPos }) {
           onLocation(latlng);
           map.flyTo(latlng, 15);
           setMyPos(latlng)
-          if (savedPos){
+          if (savedPos) {
             getRoad(
-              {lat:latlng[0], lng:latlng[1]},
+              { lat: latlng[0], lng: latlng[1] },
               savedPos
             )
           }
@@ -149,28 +150,28 @@ function LocateButton({ onLocation, getRoad, setMyPos, savedPos }) {
 
   return (
     <div ref={ref}>
-    <button
-      onClick={handleClick}
-      style={{
-        position: "absolute",
-        top: "20px",
-        right: "20px",
-        zIndex: 1000,
-        padding: "8px 12px",
-        background: "#1976d2",
-        color: "white",
-        border: "none",
-        borderRadius: "4px",
-        cursor: "pointer",
-      }}
-    >
-      📍 내 위치
-    </button>
+      <button
+        onClick={handleClick}
+        style={{
+          position: "absolute",
+          top: "20px",
+          right: "20px",
+          zIndex: 1000,
+          padding: "8px 12px",
+          background: "#1976d2",
+          color: "white",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer",
+        }}
+      >
+        📍 내 위치
+      </button>
     </div>
   );
 }
 
-function ClickMyPos( {onLocation }) {
+function ClickMyPos({ onLocation }) {
   useMapEvents({
     click(e) {
       onLocation([e.latlng.lat, e.latlng.lng])
@@ -218,6 +219,7 @@ function App() {
   const [botMessage, setBotMessage] = useState(null); // 봇 메시지
 
   const myPosRef = useRef(myPos);
+  const mapRef = useRef(null); // Add a reference to the map instance
 
   useEffect(() => {
     myPosRef.current = myPos; // myPos 바뀔 때마다 ref 업데이트
@@ -225,12 +227,12 @@ function App() {
 
   const handleSubwayPos = async (pos) => {
     const currentPos = myPosRef.current; // 항상 최신값
-    const result = await getRoute({lat:currentPos[0], lng:currentPos[1]}, pos)
+    const result = await getRoute({ lat: currentPos[0], lng: currentPos[1] }, pos)
     setSavedPos(pos)
     if (result) {
       setRoute(result.coords);
       setInfo(result.info);
-      console.log(result.info.distance,'km,', result.info.duration, '분')
+      console.log(result.info.distance, 'km,', result.info.duration, '분')
       const res = await fetch(
         `http://localhost:5000/info?distance=${result.info.distance}&time=${result.info.duration}`
       );
@@ -245,7 +247,7 @@ function App() {
     if (result) {
       setRoute(result.coords);
       setInfo(result.info);
-      console.log(result.info.distance,'km,', result.info.duration, '분')
+      console.log(result.info.distance, 'km,', result.info.duration, '분')
       const res = await fetch(
         `http://localhost:5000/info?distance=${result.info.distance}&time=${result.info.duration}`
       );
@@ -309,11 +311,56 @@ function App() {
     }
   }, []);
 
-  // useEffect(() => {
-  //   selectedTime
-  // })
+  // Zoom control handlers
+  const handleZoomIn = () => {
+    const map = mapRef.current;
+    if (map) {
+      try {
+        const currentZoom = map.getZoom();
+        const maxZoom = map.getMaxZoom();
+        if (currentZoom < maxZoom) {
+          map.setZoom(currentZoom + 1);
+        }
+      } catch (error) {
+        console.error("줌인 에러:", error);
+      }
+    } else {
+      console.error("Map reference is not available");
+    }
+  };
 
-  const toggleSidebar = () => {setOpen(!open)};
+  const handleZoomOut = () => {
+    const map = mapRef.current;
+    if (map) {
+      try {
+        const currentZoom = map.getZoom();
+        const minZoom = map.getMinZoom();
+        if (currentZoom > minZoom) {
+          console.log("Zooming out to:", currentZoom - 1);
+          map.setZoom(currentZoom - 1);
+        }
+      } catch (error) {
+        console.error("줌아웃 에러:", error);
+      }
+    } else {
+      console.error("Map reference is not available");
+    }
+  };
+
+  const handleCurrentLocation = () => {
+    const map = mapRef.current;
+    if (map && myPos) {
+      try {
+        map.flyTo(myPos, 15.5, { duration: 1.5 });
+      } catch (error) {
+        console.error("위치 초기화 에러:", error);
+      }
+    } else {
+      console.error("Map reference or current position is not available");
+    }
+  };
+
+  const toggleSidebar = () => { setOpen(!open) };
   const getcurt = () => {
     setSelectedTime(getCurrentTime());
     setSelectedDay(getDayType())
@@ -336,8 +383,8 @@ function App() {
           zIndex: 1000,
         }}
       >
-          <h3>⏰ 시간 선택</h3>
-          <div style={{ display: "flex", gap: "8px", marginBottom: "1rem", padding:"0px" }}>
+        <h3>⏰ 시간 선택</h3>
+        <div style={{ display: "flex", gap: "8px", marginBottom: "1rem", padding: "0px" }}>
           <select
             value={selectedDay}
             onChange={(e) => setSelectedDay(e.target.value)}
@@ -367,12 +414,12 @@ function App() {
           >
             O
           </button>
-          </div>
+        </div>
         <h3>🔍 역 검색</h3>
         <SearchBox markers={markers} onSelect={setTargetStation} />
       </div>
 
-      <ChatWidget botMessage={botMessage}/>
+      <ChatWidget botMessage={botMessage} />
 
       {/* 사이드바 토글 버튼 */}
       <button
@@ -403,9 +450,8 @@ function App() {
         zoomSnap={0.5}
         zoomControl={false}
         attributionControl={false}
-        // maxBounds={bounds}
-        // maxBoundsViscosity={1.0}
         style={{ width: "100vw", height: "100vh" }}
+        ref={mapRef}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png" maxZoom={20} minZoom={8.0} />
 
@@ -417,15 +463,15 @@ function App() {
         <LocateButton onLocation={setMyPos} getRoad={handleRoute} setMyPos={setMyPos} savedPos={savedPos} />
 
         {myPos && <Marker position={myPos} icon={markerIcon_} />}
-         <DestinationMarker /> 
+        <DestinationMarker />
         {route.length > 0 && (
-            <>
-              <Polyline
-                positions={route}
-                pathOptions={{ color: "blue", weight: 6, opacity: 0.5 }}
-              />
-            </>
-          )}
+          <>
+            <Polyline
+              positions={route}
+              pathOptions={{ color: "blue", weight: 6, opacity: 0.5 }}
+            />
+          </>
+        )}
 
 
         {myPos && <ZoomMarkers
@@ -437,6 +483,13 @@ function App() {
           onMarkerClick={handleSubwayPos}
         />}
       </MapContainer>
+
+      {/* 카메라 제어 버튼 그룹 컴포넌트 */}
+      <CameraControlBtnGroup
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
+        onCurrentLocation={handleCurrentLocation}
+      />
     </div>
   );
 }
