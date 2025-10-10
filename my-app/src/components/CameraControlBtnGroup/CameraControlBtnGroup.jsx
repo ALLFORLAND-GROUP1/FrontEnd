@@ -6,30 +6,30 @@ import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import MyLocationIcon from '@mui/icons-material/MyLocation';
 
 // 확대/축소 컨트롤 컨테이너
-const ZoomControlContainer = styled(Paper)(({ theme }) => ({
+const ZoomControlContainer = styled(Paper)(() => ({
   position: 'fixed',
   bottom: '50px',
   right: '20px',
   zIndex: 1100,
   display: 'flex',
   flexDirection: 'column',
-  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+  backgroundColor: 'rgba(255, 255, 255, 0.9)',
   backdropFilter: 'blur(10px)',
   borderRadius: '8px',
-  border: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#e0e0e0'}`,
+  border: '1px solid #e0e0e0',
   overflow: 'hidden',
 }));
 
 // 확대/축소 버튼 스타일
-const ZoomButton = styled(IconButton)(({ theme }) => ({
+const ZoomButton = styled(IconButton)(() => ({
   padding: '12px',
   borderRadius: 0,
-  color: theme.palette.text.primary,
+  color: '#000',
   '&:hover': {
-    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
   },
   '&:not(:last-child)': {
-    borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#e0e0e0'}`,
+    borderBottom: '1px solid #e0e0e0',
   },
 }));
 
