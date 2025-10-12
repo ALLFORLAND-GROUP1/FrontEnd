@@ -12,12 +12,20 @@ import { loadCSV } from './modules/utils';
 import "leaflet-polylinedecorator"
 import { getRoute } from './modules/getRoute'
 import CameraControlBtnGroup from './components/CameraControlBtnGroup/CameraControlBtnGroup';
+import currentLocationIconUrl from "./assets/image/curLocation_marker.png";
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: markerIcon2x,
   iconUrl: markerIcon,
   shadowUrl: markerShadow,
+});
+
+// 현재 위치 아이콘
+const currentLocationIcon = L.icon({
+  iconUrl: currentLocationIconUrl,
+  iconSize: [50, 50],
+  iconAnchor: [20, 41],
 });
 
 // 기본 마커 아이콘
@@ -462,7 +470,7 @@ function App() {
 
         <LocateButton onLocation={setMyPos} getRoad={handleRoute} setMyPos={setMyPos} savedPos={savedPos} />
 
-        {myPos && <Marker position={myPos} icon={markerIcon_} />}
+        {myPos && <Marker position={myPos} icon={currentLocationIcon} />}
         <DestinationMarker />
         {route.length > 0 && (
           <>
