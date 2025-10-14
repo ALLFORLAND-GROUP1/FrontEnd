@@ -11,6 +11,8 @@ import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import { loadCSV } from './modules/utils';
 import "leaflet-polylinedecorator"
+import { Box } from "@mui/material";
+import Sidebar from "./modules/Sidebar";
 import { getRoute } from './modules/getRoute'
 import CameraControlBtnGroup from './components/CameraControlBtnGroup/CameraControlBtnGroup';
 import currentLocationIconUrl from "./assets/image/curLocation_marker.png";
@@ -37,7 +39,7 @@ const markerIcon_ = L.icon({
 });
 
 // 초기 중심 위치
-const position = [36.17, 127.83];
+const position = [37.5662201, 126.8593251];
 // 지도 경계
 const bounds = L.latLngBounds([32.5, 123.5], [39.0, 132.0]);
 
@@ -54,58 +56,50 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
   return R * c; // 거리 (km)
 }
 
-// 원을 그리는 컴포넌트
-// function LocationCircle({ myPos }) {
-//   const map = useMap();
-//   const [showCircle, setShowCircle] = useState(false);
-//   const radius = 1000;
+function DynamicPolyline({ route }) {
+  const map = useMap();
+  const [pathOptions, setPathOptions] = useState({
+    color: "#9e97ffff",
+    weight: 6,
+    opacity: 1.0
+  });
 
-//   useEffect(() => {
-//     if (myPos) {
-//       // flyTo 실행
-//       // map.flyTo(myPos, 15, { duration: 1.5 });
+  const [pathOptions2, setPathOptions2] = useState({
+    color: "#05029eff",
+    weight: 10,
+    opacity: 1.0,
+  });
 
-//       // 이동 완료 후 원 보여주기
-//       const handleMoveEnd = () => {
-//         setShowCircle(true);
-//         map.off("moveend", handleMoveEnd); // 이벤트 중복 제거
-//       };
+  // useEffect(() => {
+  //   const handleZoom = () => {
+  //     const zoom = map.getZoom();
+  //     // 줌 비율에 따라 선 두께 및 투명도 즉각 변경
+  //     setPathOptions({
+  //       color: "blue",
+  //       weight: Math.max(2, zoom / 2), // 줌이 커질수록 두꺼워짐
+  //       // opacity: Math.min(1, 0.3 + zoom * 0.05), // 줌에 따른 투명도 변화
+  //     });
+  //   };
 
-//       map.on("moveend", handleMoveEnd);
-//     }
-//   }, [myPos, map]);
+  //   map.on("zoom", handleZoom); // 줌 중에도 즉각 반응
+  //   return () => {
+  //     map.off("zoom", handleZoom);
+  //   };
+  // }, [map]);
 
-//   // useMapEvents({
-//   //   click(e){
-//   //     const dist = getDistanceFromLatLonInKm(myPos[0], myPos[1], e.latlng.lat, e.latlng.lng)
-//   //     if (dist > radius/1000){
-//   //       setShowCircle(false);
-//   //     }
-//   //   }
-//   // })
+  if (!route || route.length === 0) return null;
 
-//   if (!showCircle) return null;
-
-//   return (
-//     <Circle
-//       center={myPos}
-//       radius={radius} // 반경 1km
-//       pathOptions={{
-//         color: "blue",
-//         fillColor: "blue",
-//         fillOpacity: 0.1,
-//       }}
-//     />
-//   );
-// }
-
+  return <>
+  <Polyline positions={route} pathOptions={pathOptions2} />
+  <Polyline positions={route} pathOptions={pathOptions} /></>;
+}
 
 // 지도 이동만 담당
 function FlyToLocation({ position }) {
   const map = useMap();
   useEffect(() => {
     if (position) {
-      map.flyTo(position, 15, { duration: 1.5 });
+      map.flyTo(position, 15, { duration: 1.2 });
     }
   }, [map, position]);
   return null;
@@ -136,9 +130,10 @@ function LocateButton({ onLocation, getRoad, setMyPos, savedPos }) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const { latitude, longitude } = pos.coords;
-          const latlng = [37.54135, 127.165254];
+          // const latlng = [37.54135, 127.165254];
+          const latlng = [latitude, longitude]
           onLocation(latlng);
-          map.flyTo(latlng, 15);
+          map.flyTo(latlng, 15, {duration:1.2});
           setMyPos(latlng)
           if (savedPos) {
             getRoad(
@@ -180,15 +175,6 @@ function LocateButton({ onLocation, getRoad, setMyPos, savedPos }) {
   );
 }
 
-function ClickMyPos({ onLocation }) {
-  useMapEvents({
-    click(e) {
-      onLocation([e.latlng.lat, e.latlng.lng])
-    },
-  });
-  return null;
-}
-
 function App() {
   const getCurrentTime = () => {
     const now = new Date();
@@ -215,7 +201,6 @@ function App() {
 
   const [markers, setMarkers] = useState([]);
   const [myPos, setMyPos] = useState(null);
-  const [open, setOpen] = useState(false);
   const [subwayData, setSubwayData] = useState([]);
   const [selectedTime, setSelectedTime] = useState(getCurrentTime);
   const [selectedDay, setSelectedDay] = useState(getDayType);
@@ -226,17 +211,38 @@ function App() {
   const [info, setInfo] = useState(null); // 거리/시간 정보
   const [savedPos, setSavedPos] = useState(null);
   const [botMessage, setBotMessage] = useState(null); // 봇 메시지
+  const [selectedRouteAPI, setselectedRouteAPI] = useState('gh');
+  const [mapType, setMapType] = useState('aerial');
 
   const myPosRef = useRef(myPos);
+  const routeAPIRef = useRef(selectedRouteAPI)
+  const markersRef = useRef(null);
+
+  const [activeMenu, setActiveMenu] = useState(null); // 'time' | 'search' | 'menu' | null
+
+  // 공통 토글 함수
+  const toggleMenu = (menu) => {
+    setActiveMenu((prev) => (prev === menu ? null : menu));
+  };
+
+  const tileUrls = {
+    normal: "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
+    aerial: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+  };
   const mapRef = useRef(null); // Add a reference to the map instance
 
   useEffect(() => {
     myPosRef.current = myPos; // myPos 바뀔 때마다 ref 업데이트
   }, [myPos]);
 
+  useEffect(() => {
+    routeAPIRef.current = selectedRouteAPI
+  }, [selectedRouteAPI])
+
   const handleSubwayPos = async (pos) => {
     const currentPos = myPosRef.current; // 항상 최신값
-    const result = await getRoute({ lat: currentPos[0], lng: currentPos[1] }, pos)
+
+    const result = await getRoute({lat:currentPos[0], lng:currentPos[1]}, pos, routeAPIRef.current)
     setSavedPos(pos)
     if (result) {
       setRoute(result.coords);
@@ -251,7 +257,8 @@ function App() {
   }
 
   const handleRoute = async (start, end) => {
-    const result = await getRoute(start, end);
+    console.log(routeAPIRef.current)
+    const result = await getRoute(start, end, routeAPIRef.current);
     setSavedPos(end)
     if (result) {
       setRoute(result.coords);
@@ -266,10 +273,10 @@ function App() {
   };
 
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden"; // 스크롤 비활성화
-    }
-  }, [open])
+
+    document.body.style.overflow = "hidden"; // 스크롤 비활성화
+    
+  }, [])
 
   useEffect(() => {
     if (myPos && markers.length > 0) {
@@ -369,104 +376,65 @@ function App() {
     }
   };
 
-  const toggleSidebar = () => { setOpen(!open) };
   const getcurt = () => {
     setSelectedTime(getCurrentTime());
     setSelectedDay(getDayType())
   };
 
+  const handleSelectStation = (station) => {
+    // setTargetStation(station)
+
+    // 1️⃣ 지도 중심 이동
+    console.log(station.lat, station.lng)
+    
+
+    // 2️⃣ 팝업 열기 (ZoomMarkers에서 제공하는 openPopupByKey 사용)
+    const key = `${station.name}-${station.ho}`;
+    markersRef.current?.flyToAndOpen(key, station.lat, station.lng);
+    markersRef.current?.openPopupByKey(key);
+  };
+
+   const handleInfo = (time_, day_, routeapi_, maptype_) => {
+    setSelectedTime(time_)
+    setSelectedDay(day_)
+    setselectedRouteAPI(routeapi_)
+    setMapType(maptype_)
+    // console.log("사이드바에서 받은 인포:", a,b,c,d);
+  };
+
   return (
-    <div>
+    <Box sx={{ position: "relative", height: "100vh", display: "flex" }}>
       {/* 사이드바 */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: open ? 0 : "-282px",
-          width: "250px",
-          height: "100%",
-          background: "#f4f4f4",
-          boxShadow: "2px 0 5px rgba(0,0,0,0.3)",
-          transition: "left 0.3s ease-in-out",
-          padding: "1rem",
-          zIndex: 1000,
-        }}
-      >
-        <h3>⏰ 시간 선택</h3>
-        <div style={{ display: "flex", gap: "8px", marginBottom: "1rem", padding: "0px" }}>
-          <select
-            value={selectedDay}
-            onChange={(e) => setSelectedDay(e.target.value)}
-            style={{ width: "100%", padding: "6px", marginTop: "10px" }}
-          >
-            <option value="평일">평일</option>
-            <option value="토요일">토요일</option>
-            <option value="일요일">일요일</option>
-          </select>
-          <input
-            type="time"
-            value={selectedTime}
-            onChange={(e) => setSelectedTime(e.target.value)}
-            style={{ width: "100%", padding: "6px", marginTop: "10px", boxSizing: "border-box" }}
-          />
-          <button
-            onClick={getcurt}
-            style={{
-              marginTop: "10px",
-              padding: "6px 12px",
-              background: "#1976d2",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-            }}
-          >
-            O
-          </button>
-        </div>
-        <h3>🔍 역 검색</h3>
-        <SearchBox markers={markers} onSelect={setTargetStation} />
-      </div>
+      <Sidebar
+        markers={markers}
+        handleSelectStation={handleSelectStation}
+        onChangeInfo={handleInfo}
+      />
+      
+      
 
       <ChatWidget botMessage={botMessage} />
-
-      {/* 사이드바 토글 버튼 */}
-      <button
-        onClick={toggleSidebar}
-        style={{
-          position: "absolute",
-          top: "50%",
-          transform: "translateY(-50%)",
-          left: open ? "282px" : "0px",
-          zIndex: 1100,
-          padding: "20px 12px",
-          background: "#474747ff",
-          color: "#ffffffff",
-          border: '1px solid black',
-          borderRadius: "4px",
-          cursor: "pointer",
-          transition: "left 0.3s ease-in-out",
-          fontSize: "20px",
-        }}
-      >
-        {open ? "<" : ">"}
-      </button>
 
       {/* 지도 */}
       <MapContainer
         center={position}
-        zoom={8.0}
+        zoom={15}
         zoomSnap={0.5}
         zoomControl={false}
         attributionControl={false}
+        maxZoom={18}
+        // maxBounds={bounds}
+        // maxBoundsViscosity={1.0}
         style={{ width: "100vw", height: "100vh" }}
         ref={mapRef}
       >
-        <TileLayer url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png" maxZoom={20} minZoom={8.0} />
-
+        <TileLayer url={tileUrls[mapType]} maxZoom={20} minZoom={8.0}/>
 
         {/* <ClickMyPos onLocation={setMyPos}/> */}
-        {targetStation && <FlyToLocation position={targetStation} />}
+        {targetStation && 
+        <>
+        <FlyToLocation position={targetStation} />
+        </>}
         {myPos && <FlyToLocation position={myPos} />}
 
         <LocateButton onLocation={setMyPos} getRoad={handleRoute} setMyPos={setMyPos} savedPos={savedPos} />
@@ -474,16 +442,14 @@ function App() {
         {myPos && <Marker position={myPos} icon={currentLocationIcon} />}
         <DestinationMarker />
         {route.length > 0 && (
-          <>
-            <Polyline
-              positions={route}
-              pathOptions={{ color: "blue", weight: 6, opacity: 0.5 }}
-            />
-          </>
-        )}
+            <>
+              <DynamicPolyline route={route} />
+            </>
+          )}
 
 
         {myPos && <ZoomMarkers
+          ref={markersRef}
           markers={markers}
           subwayData={subwayData}
           selectedDay={selectedDay}
@@ -492,14 +458,14 @@ function App() {
           onMarkerClick={handleSubwayPos}
         />}
       </MapContainer>
-
-      {/* 카메라 제어 버튼 그룹 컴포넌트 */}
+         
+         {/* 카메라 제어 버튼 그룹 컴포넌트 */}
       <CameraControlBtnGroup
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
         onCurrentLocation={handleCurrentLocation}
       />
-    </div>
+    </Box>
   );
 }
 
