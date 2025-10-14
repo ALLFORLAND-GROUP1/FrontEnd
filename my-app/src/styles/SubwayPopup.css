@@ -168,14 +168,39 @@
   text-align: center;
 }
 
-/* 운행 중인 간격 (초록색) */
-.interval.active {
-  background: #28a745;
+/* 운행 간격 색상 - 0~9분 (진한 초록색) */
+.interval.interval-0 {
+  background: #00b300;
 }
 
-/* 운행 중단 간격 (빨간색) */
+/* 운행 간격 색상 - 10~19분 (밝은 초록색) */
+.interval.interval-10 {
+  background: #4caf50;
+}
+
+/* 운행 간격 색상 - 20~29분 (연두색) */
+.interval.interval-20 {
+  background: #8bc34a;
+}
+
+/* 운행 간격 색상 - 30~39분 (노란색) */
+.interval.interval-30 {
+  background: #ffc107;
+}
+
+/* 운행 간격 색상 - 40~49분 (주황색) */
+.interval.interval-40 {
+  background: #ff9800;
+}
+
+/* 운행 간격 색상 - 50분 이상 (빨간색) */
+.interval.interval-50 {
+  background: #f44336;
+}
+
+/* 운행 중단 간격 (회색) */
 .interval.no-service {
-  background: #dc3545;
+  background: #6c757d;
 }
 
 /* 가장 가까운 시간대 표시 영역 */

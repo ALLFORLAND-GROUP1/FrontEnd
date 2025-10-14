@@ -43,35 +43,35 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
   const markerRefs = useRef({});
 
   useImperativeHandle(ref, () => ({
-  flyToAndOpen: async (key, lat, lng, targetZoom=15) => {
-    if (!map) return;
+    flyToAndOpen: async (key, lat, lng, targetZoom = 15) => {
+      if (!map) return;
 
-    // 1️⃣ 현재 zoom < minZoom이면 먼저 확대
-    if (map.getZoom() < minZoom) {
-      map.setZoom(minZoom, { animate: true });
-    }
-
-    // 2️⃣ 이동 실행
-    if (lat != null && lng != null) {
-      map.flyTo([lat, lng], targetZoom, { duration: 1.2 });
-    }
-
-    // 3️⃣ 지도 이동/확대 완료 감지 후 실행
-    const waitForRender = () => {
-      const marker = markerRefs.current[key];
-      if (marker) {
-        // ✅ 마커 렌더 확인 후 팝업 오픈
-        marker.openPopup();
-        map.off("moveend", waitForRender);
-        map.off("zoomend", waitForRender);
-      } else {
-        // 아직 마커가 안 렌더링된 경우 재시도 (0.2초 간격)
-        setTimeout(waitForRender, 200);
+      // 1️⃣ 현재 zoom < minZoom이면 먼저 확대
+      if (map.getZoom() < minZoom) {
+        map.setZoom(minZoom, { animate: true });
       }
-    };
 
-    map.on("moveend", waitForRender);
-    map.on("zoomend", waitForRender);
+      // 2️⃣ 이동 실행
+      if (lat != null && lng != null) {
+        map.flyTo([lat, lng], targetZoom, { duration: 1.2 });
+      }
+
+      // 3️⃣ 지도 이동/확대 완료 감지 후 실행
+      const waitForRender = () => {
+        const marker = markerRefs.current[key];
+        if (marker) {
+          // ✅ 마커 렌더 확인 후 팝업 오픈
+          marker.openPopup();
+          map.off("moveend", waitForRender);
+          map.off("zoomend", waitForRender);
+        } else {
+          // 아직 마커가 안 렌더링된 경우 재시도 (0.2초 간격)
+          setTimeout(waitForRender, 200);
+        }
+      };
+
+      map.on("moveend", waitForRender);
+      map.on("zoomend", waitForRender);
     },
     openPopupByKey: (key) => {
       const marker = markerRefs.current[key];
@@ -105,7 +105,7 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
     map.on("zoomend", handleZoom);
     return () => map.off("zoomend", handleZoom);
   }, [map, minZoom]);
-  
+
   // if (!visible) return null;
   return (
     <>
@@ -121,15 +121,15 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
 
         return (
           <Marker key={key} position={[m.lat, m.lng]} icon={markerIcon_} ref={(el) => (markerRefs.current[key] = el)} eventHandlers={{
-            click: (e) =>{
-              if (onMarkerClick){
+            click: (e) => {
+              if (onMarkerClick) {
                 onMarkerClick(e.latlng)
               }
             }
-            
+
           }}
-          opacity={map.getZoom() < minZoom ? 0:1}
-          interactive={true}
+            opacity={map.getZoom() < minZoom ? 0 : 1}
+            interactive={true}
           >
             <Popup
               autoPan={false}
@@ -155,10 +155,28 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
                     {upDownTypes.map((type, i) => {
                       const row = directions.find((d) => d["upDown"] === type);
                       const interval = col && row ? row[col] : "0";
+                      // 운행 간격에 따른 색상 결정 (6단계 구분)
+                      let intervalClass = 'no-service';
+                      if (interval !== '0') {
+                        const intervalNum = parseInt(interval);
+                        if (intervalNum < 10) {
+                          intervalClass = 'interval-0'; // 0~9분: 매우 빠름
+                        } else if (intervalNum < 20) {
+                          intervalClass = 'interval-10'; // 10~19분: 빠름
+                        } else if (intervalNum < 30) {
+                          intervalClass = 'interval-20'; // 20~29분: 보통
+                        } else if (intervalNum < 40) {
+                          intervalClass = 'interval-30'; // 30~39분: 약간 느림
+                        } else if (intervalNum < 50) {
+                          intervalClass = 'interval-40'; // 40~49분: 느림
+                        } else {
+                          intervalClass = 'interval-50'; // 50분 이상: 매우 느림
+                        }
+                      }
                       return (
                         <div key={i} className="interval-item">
                           <span className="direction">{type}</span>
-                          <span className={`interval ${interval === '0' ? 'no-service' : 'active'}`}>
+                          <span className={`interval ${intervalClass}`}>
                             {interval}분
                           </span>
                         </div>
