@@ -1,4 +1,4 @@
-import { useState, useEffect, memo, useRef } from "react";
+import { useState, useEffect, memo, useRef, forwardRef, useImperativeHandle } from "react";
 import { Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 
@@ -33,10 +33,55 @@ function findClosestTimeColumn(selectedTime, row) {
 
 
 // 마커 & 팝업
-function ZoomMarkers({ markers, subwayData, selectedDay, selectedTime, minZoom = 10, onMarkerClick}) {
+const ZoomMarkers = forwardRef(function ZoomMarkers(
+  { markers, subwayData, selectedDay, selectedTime, minZoom = 10, onMarkerClick },
+  ref
+) {
   const map = useMap();
   const [visible, setVisible] = useState(map.getZoom() >= minZoom);
   const prevZoom = useRef(map.getZoom()); // 이전 줌값 기억
+  const markerRefs = useRef({});
+
+  useImperativeHandle(ref, () => ({
+  flyToAndOpen: async (key, lat, lng, targetZoom=15) => {
+    if (!map) return;
+
+    // 1️⃣ 현재 zoom < minZoom이면 먼저 확대
+    if (map.getZoom() < minZoom) {
+      map.setZoom(minZoom, { animate: true });
+    }
+
+    // 2️⃣ 이동 실행
+    if (lat != null && lng != null) {
+      map.flyTo([lat, lng], targetZoom, { duration: 1.2 });
+    }
+
+    // 3️⃣ 지도 이동/확대 완료 감지 후 실행
+    const waitForRender = () => {
+      const marker = markerRefs.current[key];
+      if (marker) {
+        // ✅ 마커 렌더 확인 후 팝업 오픈
+        marker.openPopup();
+        map.off("moveend", waitForRender);
+        map.off("zoomend", waitForRender);
+      } else {
+        // 아직 마커가 안 렌더링된 경우 재시도 (0.2초 간격)
+        setTimeout(waitForRender, 200);
+      }
+    };
+
+    map.on("moveend", waitForRender);
+    map.on("zoomend", waitForRender);
+    },
+    openPopupByKey: (key) => {
+      const marker = markerRefs.current[key];
+      if (marker) {
+        marker.openPopup();
+        onMarkerClick(marker._latlng)
+        console.log(marker._latlng)
+      }
+    },
+  }));
 
   useEffect(() => {
     const handleZoom = () => {
@@ -61,10 +106,13 @@ function ZoomMarkers({ markers, subwayData, selectedDay, selectedTime, minZoom =
     return () => map.off("zoomend", handleZoom);
   }, [map, minZoom]);
   
-  if (!visible) return null;
+  // if (!visible) return null;
   return (
     <>
-      {markers.map((m, idx) => {
+      {markers.map((m) => {
+        // ✅ 고유 key 생성 (name-ho 조합)
+        const key = `${m.name}-${m.ho}`;
+
         const directions = subwayData.filter(
           (row) => row["date"] === selectedDay && row["ho"] === m.ho && row["name"] === m.name
         );
@@ -72,13 +120,17 @@ function ZoomMarkers({ markers, subwayData, selectedDay, selectedTime, minZoom =
         const col = directions.length > 0 ? findClosestTimeColumn(selectedTime, directions[0]) : null;
 
         return (
-          <Marker key={idx} position={[m.lat, m.lng]} icon={markerIcon_} eventHandlers={{
+          <Marker key={key} position={[m.lat, m.lng]} icon={markerIcon_} ref={(el) => (markerRefs.current[key] = el)} eventHandlers={{
             click: (e) =>{
               if (onMarkerClick){
                 onMarkerClick(e.latlng)
               }
             }
-          }}>
+            
+          }}
+          opacity={map.getZoom() < minZoom ? 0:1}
+          interactive={true}
+          >
             <Popup autoPan={false}>
               <strong>
                 {m.name} {m.ho + "호선"}
@@ -101,7 +153,7 @@ function ZoomMarkers({ markers, subwayData, selectedDay, selectedTime, minZoom =
       })}
     </>
   );
-}
+});
 
 export default memo(ZoomMarkers, (prevProps, nextProps) => {
   return (

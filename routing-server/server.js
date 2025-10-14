@@ -25,13 +25,21 @@ app.get("/info", async (req, res) => {
 
 // ORS 경로 API 프록시
 app.get("/route", async (req, res) => {
-  const { start, end, mode } = req.query;
+  const { start, end, mode, apitype } = req.query;
   try {
-    // console.log('api 정보', start, end, mode)
-    const orsRes = await fetch(
-      `https://api.openrouteservice.org/v2/directions/${mode}?api_key=${process.env.ORS_KEY}&start=${start}&end=${end}`
-    );
-    const data = await orsRes.json();
+    console.log('api 정보', start[0], end, mode, apitype)
+    var routeRes = null;
+    if (apitype==='ors'){
+      routeRes = await fetch(
+        `https://api.openrouteservice.org/v2/directions/${mode}?api_key=${process.env.ORS_KEY}&start=${start}&end=${end}`
+      );
+    } else if (apitype === 'gh'){
+      routeRes = await fetch(
+        `https://graphhopper.com/api/1/route?point=${start}&point=${end}&vehicle=foot&locale=ko&key=${process.env.GH_KEY}&points_encoded=false`
+        // `https://api.openrouteservice.org/v2/directions/${mode}?api_key=${process.env.ORS_KEY}&start=${start}&end=${end}`
+      );
+    }
+    const data = await routeRes.json();
 
     // ✅ JSON 저장 (타임스탬프 기반 파일명)
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
