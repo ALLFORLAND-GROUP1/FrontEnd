@@ -175,6 +175,19 @@ function LocateButton({ onLocation, getRoad, setMyPos, savedPos }) {
   );
 }
 
+function MapRefresher({ dependency }) {
+  const map = useMap();
+
+  useEffect(() => {
+    // 지도 타일·크기 다시 계산
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 200); // 약간 지연 주면 안정적
+  }, [dependency, map]);
+
+  return null;
+}
+
 function App() {
   const getCurrentTime = () => {
     const now = new Date();
@@ -376,10 +389,14 @@ function App() {
     }
   };
 
-  const getcurt = () => {
-    setSelectedTime(getCurrentTime());
-    setSelectedDay(getDayType())
-  };
+  function ClickMyPos( {onLocation }) {
+    useMapEvents({
+      click(e) {
+        onLocation([e.latlng.lat, e.latlng.lng])
+      },
+    });
+    return null;
+  }
 
   const handleSelectStation = (station) => {
     // setTargetStation(station)
@@ -429,6 +446,7 @@ function App() {
         ref={mapRef}
       >
         <TileLayer url={tileUrls[mapType]} maxZoom={20} minZoom={8.0}/>
+        <MapRefresher dependency={tileUrls[mapType]}/>
 
         {/* <ClickMyPos onLocation={setMyPos}/> */}
         {targetStation && 
