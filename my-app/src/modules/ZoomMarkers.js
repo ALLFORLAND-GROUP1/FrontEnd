@@ -131,22 +131,49 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
           opacity={map.getZoom() < minZoom ? 0:1}
           interactive={true}
           >
-            <Popup autoPan={false}>
-              <strong>
-                {m.name} {m.ho + "호선"}
-              </strong>
-              <br />
-              📅 {selectedDay}, ⏰ {selectedTime}
-              <br />
-              {upDownTypes.map((type, i) => {
-                const row = directions.find((d) => d["upDown"] === type);
-                return (
-                  <div key={i}>
-                    {type}: {col && row ? row[col] : "-"}
+            <Popup
+              autoPan={false}
+              closeButton={true}
+              maxWidth={280}
+              className="subway-popup-modern"
+            >
+              <div className="subway-info-card">
+                <div className="subway-header">
+                  <div className="subway-title">
+                    <span className="subway-name">{m.name}</span>
+                    <span className={`subway-line line-${m.ho}`}>{m.ho}호선</span>
                   </div>
-                );
-              })}
-              {col && <p>↪️ 가장 가까운 시간대: {col}</p>}
+                  <div className="subway-datetime">
+                    <span className="date">📅 {selectedDay}</span>
+                    <span className="time">⏰ {selectedTime}</span>
+                  </div>
+                </div>
+
+                <div className="subway-content">
+                  <div className="intervals-title">🚇 운행 간격</div>
+                  <div className="intervals-list">
+                    {upDownTypes.map((type, i) => {
+                      const row = directions.find((d) => d["upDown"] === type);
+                      const interval = col && row ? row[col] : "0";
+                      return (
+                        <div key={i} className="interval-item">
+                          <span className="direction">{type}</span>
+                          <span className={`interval ${interval === '0' ? 'no-service' : 'active'}`}>
+                            {interval}분
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {col && (
+                    <div className="closest-time">
+                      <span className="time-icon">⏱️</span>
+                      가장 가까운 시간: <strong>{col}</strong>
+                    </div>
+                  )}
+                </div>
+              </div>
             </Popup>
           </Marker>
         );

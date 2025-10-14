@@ -1,6 +1,7 @@
-routing-server/node_modules
-routing-server/package-lock.json
-routing-server/routes
-routing-server/.env
-my-app/node_modules
-my-app/package-lock.json
+package-lock.json
+node_modules/
+routes/
+
+dist/
+.env
+.DS_Store

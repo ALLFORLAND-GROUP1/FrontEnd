@@ -1,0 +1,213 @@
+/* 팝업 컨테이너 래퍼 스타일 */
+.subway-popup-modern .leaflet-popup-content-wrapper {
+  background: #ffffff !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12) !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+/* 팝업 내용 컨테이너 스타일 */
+.subway-popup-modern .leaflet-popup-content {
+  margin: 0 !important;
+  padding: 0 !important;
+  min-width: 240px !important;
+  max-width: 280px !important;
+}
+
+/* 팝업 화살표(꼬리) 스타일 */
+.subway-popup-modern .leaflet-popup-tip {
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+/* 팝업 닫기 버튼 스타일 */
+.subway-popup-modern .leaflet-popup-close-button {
+  position: absolute !important;
+  top: 6px !important;
+  right: 6px !important;
+  color: #666 !important;
+  font-size: 14px !important;
+  font-weight: bold !important;
+  text-decoration: none !important;
+  width: 18px !important;
+  height: 18px !important;
+  text-align: center !important;
+  line-height: 16px !important;
+  border-radius: 50% !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.2s ease !important;
+}
+
+/* 팝업 닫기 버튼 호버 효과 */
+.subway-popup-modern .leaflet-popup-close-button:hover {
+  background: rgba(0, 0, 0, 0.1) !important;
+  color: #333 !important;
+}
+
+/* 메인 정보 카드 컨테이너 */
+.subway-info-card {
+  padding: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* 상단 헤더 영역 */
+.subway-header {
+  margin-bottom: 10px;
+}
+
+/* 역명과 호선 정보를 담는 타이틀 영역 */
+.subway-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+/* 지하철 역명 스타일 */
+.subway-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+}
+
+/* 호선 배지 스타일 */
+.subway-line {
+  padding: 3px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  background: #666;
+}
+
+/* 지하철 호선별 색상 정의 */
+.line-1 {
+  background: #0052a4 !important;
+}
+.line-2 {
+  background: #00a84d !important;
+}
+.line-3 {
+  background: #ef7c1c !important;
+}
+.line-4 {
+  background: #00a5de !important;
+}
+.line-5 {
+  background: #996cac !important;
+}
+.line-6 {
+  background: #cd7c2f !important;
+}
+.line-7 {
+  background: #747f00 !important;
+}
+.line-8 {
+  background: #e6186c !important;
+}
+.line-9 {
+  background: #bdb092 !important;
+}
+
+/* 날짜와 시간 정보 표시 영역 */
+.subway-datetime {
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+  color: #666;
+}
+
+/* 운행 정보 콘텐츠 영역 */
+.subway-content {
+  border-top: 1px solid #f0f0f0;
+  padding-top: 10px;
+}
+
+/* 운행 간격 섹션 제목 */
+.intervals-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+/* 운행 간격 목록 컨테이너 */
+.intervals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+/* 각 방향별 운행 간격 아이템 */
+.interval-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+/* 운행 방향 텍스트 (내선/외선) */
+.direction {
+  font-size: 12px;
+  color: #333;
+  font-weight: 500;
+}
+
+/* 운행 간격 배지 */
+.interval {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: white;
+  min-width: 30px;
+  text-align: center;
+}
+
+/* 운행 중인 간격 (초록색) */
+.interval.active {
+  background: #28a745;
+}
+
+/* 운행 중단 간격 (빨간색) */
+.interval.no-service {
+  background: #dc3545;
+}
+
+/* 가장 가까운 시간대 표시 영역 */
+.closest-time {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  background: #e3f2fd;
+  border-radius: 6px;
+  font-size: 11px;
+  color: #1565c0;
+}
+
+/* 시간 아이콘 */
+.time-icon {
+  font-size: 12px;
+}
+
+/* 팝업 등장 애니메이션 */
+.subway-popup-modern {
+  animation: slideUp 0.25s ease-out;
+}
+
+/* 애니메이션: 슬라이드 업 */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
