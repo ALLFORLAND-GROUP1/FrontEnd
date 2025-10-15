@@ -142,12 +142,19 @@
 
 /* 각 방향별 운행 간격 아이템 */
 .interval-item {
+  cursor: pointer;
+  border: none;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 6px 8px;
   background: #f8f9fa;
   border-radius: 6px;
+}
+
+/* 클릭 중일 때 (누르고 있을 때) */
+.interval-item:active {
+  background: #dee2e6; /* 좀 더 진한 회색 */
 }
 
 /* 운행 방향 텍스트 (내선/외선) */

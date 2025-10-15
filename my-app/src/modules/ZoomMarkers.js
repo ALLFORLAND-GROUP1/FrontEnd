@@ -39,6 +39,7 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
 ) {
   const map = useMap();
   const [visible, setVisible] = useState(map.getZoom() >= minZoom);
+  const [mapBounds, setMapBounds] = useState(map.getBounds()); // ✅ 현재 화면 경계 저장
   const prevZoom = useRef(map.getZoom()); // 이전 줌값 기억
   const markerRefs = useRef({});
 
@@ -55,13 +56,15 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
       if (lat != null && lng != null) {
         map.flyTo([lat, lng], targetZoom, { duration: 1.2 });
       }
-
+      onMarkerClick({'lat': lat, 'lng':lng})
       // 3️⃣ 지도 이동/확대 완료 감지 후 실행
       const waitForRender = () => {
         const marker = markerRefs.current[key];
         if (marker) {
           // ✅ 마커 렌더 확인 후 팝업 오픈
           marker.openPopup();
+          console.log([lat, lng], marker._latlng)
+          // onMarkerClick(marker._latlng)
           map.off("moveend", waitForRender);
           map.off("zoomend", waitForRender);
         } else {
@@ -106,10 +109,26 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
     return () => map.off("zoomend", handleZoom);
   }, [map, minZoom]);
 
-  // if (!visible) return null;
+  useEffect(() => {
+    const updateBounds = () => setMapBounds(map.getBounds());
+    updateBounds(); // 초기 렌더 시 1회 실행
+
+    map.on("moveend", updateBounds);
+    map.on("zoomend", updateBounds);
+
+    return () => {
+      map.off("moveend", updateBounds);
+      map.off("zoomend", updateBounds);
+    };
+  }, [map]);
+  
+  // const bounds = map.getBounds();
+  if (!visible) return null;
   return (
     <>
-      {markers.map((m) => {
+      {markers
+        .filter((m) => mapBounds.contains(L.latLng(m.lat, m.lng)))
+        .map((m) => {
         // ✅ 고유 key 생성 (name-ho 조합)
         const key = `${m.name}-${m.ho}`;
 
@@ -122,13 +141,14 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
         return (
           <Marker key={key} position={[m.lat, m.lng]} icon={markerIcon_} ref={(el) => (markerRefs.current[key] = el)} eventHandlers={{
             click: (e) => {
+              setTimeout(() => e.target.openPopup(), 200)
               if (onMarkerClick) {
-                onMarkerClick(e.latlng)
+                onMarkerClick(e.latlng, m.name)
               }
             }
 
           }}
-            opacity={map.getZoom() < minZoom ? 0 : 1}
+            // opacity={map.getZoom() < minZoom ? 0 : 1}
             interactive={true}
           >
             <Popup
@@ -159,27 +179,28 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
                       let intervalClass = 'no-service';
                       if (interval !== '0') {
                         const intervalNum = parseInt(interval);
-                        if (intervalNum < 10) {
+                        if (intervalNum < 20) {
                           intervalClass = 'interval-0'; // 0~9분: 매우 빠름
-                        } else if (intervalNum < 20) {
-                          intervalClass = 'interval-10'; // 10~19분: 빠름
-                        } else if (intervalNum < 30) {
-                          intervalClass = 'interval-20'; // 20~29분: 보통
                         } else if (intervalNum < 40) {
+                          intervalClass = 'interval-10'; // 10~19분: 빠름
+                        } else if (intervalNum < 60) {
+                          intervalClass = 'interval-20'; // 20~29분: 보통
+                        } else if (intervalNum < 80) {
                           intervalClass = 'interval-30'; // 30~39분: 약간 느림
-                        } else if (intervalNum < 50) {
+                        } else if (intervalNum < 100) {
                           intervalClass = 'interval-40'; // 40~49분: 느림
                         } else {
                           intervalClass = 'interval-50'; // 50분 이상: 매우 느림
                         }
                       }
                       return (
-                        <div key={i} className="interval-item">
+                        <button key={i} className="interval-item"
+                        onClick={(e) => console.log(type)}>
                           <span className="direction">{type}</span>
                           <span className={`interval ${intervalClass}`}>
-                            {interval}분
+                            {interval}
                           </span>
-                        </div>
+                        </button>
                       );
                     })}
                   </div>

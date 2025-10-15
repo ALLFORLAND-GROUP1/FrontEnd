@@ -8,7 +8,7 @@ import MyLocationIcon from '@mui/icons-material/MyLocation';
 // 확대/축소 컨트롤 컨테이너
 const ZoomControlContainer = styled(Paper)(() => ({
   position: 'fixed',
-  bottom: '50px',
+  top: '20px',
   right: '20px',
   zIndex: 1100,
   display: 'flex',
