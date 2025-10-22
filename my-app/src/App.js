@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap, Circle, Polyline } from "react-leaflet";
-import SearchBox from "./modules/searchbox";
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap, Polyline } from "react-leaflet";
 import ZoomMarkers from "./modules/ZoomMarkers";
 import ChatWidget from "./modules/ChatWidget";
 import L from "leaflet";
@@ -12,7 +11,7 @@ import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import { loadCSV } from './modules/utils';
 import "leaflet-polylinedecorator"
 import { Box } from "@mui/material";
-import Sidebar from "./modules/Sidebar";
+import SideMenu from "./components/SideMenu/SideMenu";
 import { getRoute } from './modules/getRoute'
 import CameraControlBtnGroup from './components/CameraControlBtnGroup/CameraControlBtnGroup';
 import currentLocationIconUrl from "./assets/image/curLocation_marker.png";
@@ -90,8 +89,8 @@ function DynamicPolyline({ route }) {
   if (!route || route.length === 0) return null;
 
   return <>
-  <Polyline positions={route} pathOptions={pathOptions2} />
-  <Polyline positions={route} pathOptions={pathOptions} /></>;
+    <Polyline positions={route} pathOptions={pathOptions2} />
+    <Polyline positions={route} pathOptions={pathOptions} /></>;
 }
 
 // 지도 이동만 담당
@@ -133,7 +132,7 @@ function LocateButton({ onLocation, getRoad, setMyPos, savedPos }) {
           // const latlng = [37.54135, 127.165254];
           const latlng = [latitude, longitude]
           onLocation(latlng);
-          map.flyTo(latlng, 15, {duration:1.2});
+          map.flyTo(latlng, 15, { duration: 1.2 });
           setMyPos(latlng)
           if (savedPos) {
             getRoad(
@@ -255,7 +254,7 @@ function App() {
   const handleSubwayPos = async (pos) => {
     const currentPos = myPosRef.current; // 항상 최신값
 
-    const result = await getRoute({lat:currentPos[0], lng:currentPos[1]}, pos, routeAPIRef.current)
+    const result = await getRoute({ lat: currentPos[0], lng: currentPos[1] }, pos, routeAPIRef.current)
     setSavedPos(pos)
     if (result) {
       setRoute(result.coords);
@@ -288,7 +287,7 @@ function App() {
   useEffect(() => {
 
     document.body.style.overflow = "hidden"; // 스크롤 비활성화
-    
+
   }, [])
 
   useEffect(() => {
@@ -389,7 +388,7 @@ function App() {
     }
   };
 
-  function ClickMyPos( {onLocation }) {
+  function ClickMyPos({ onLocation }) {
     useMapEvents({
       click(e) {
         onLocation([e.latlng.lat, e.latlng.lng])
@@ -403,7 +402,7 @@ function App() {
 
     // 1️⃣ 지도 중심 이동
     console.log(station.lat, station.lng)
-    
+
 
     // 2️⃣ 팝업 열기 (ZoomMarkers에서 제공하는 openPopupByKey 사용)
     const key = `${station.name}-${station.ho}`;
@@ -411,7 +410,7 @@ function App() {
     markersRef.current?.openPopupByKey(key);
   };
 
-   const handleInfo = (time_, day_, routeapi_, maptype_) => {
+  const handleInfo = (time_, day_, routeapi_, maptype_) => {
     setSelectedTime(time_)
     setSelectedDay(day_)
     setselectedRouteAPI(routeapi_)
@@ -422,13 +421,13 @@ function App() {
   return (
     <Box sx={{ position: "relative", height: "100vh", display: "flex" }}>
       {/* 사이드바 */}
-      <Sidebar
+      <SideMenu
         markers={markers}
         handleSelectStation={handleSelectStation}
         onChangeInfo={handleInfo}
       />
-      
-      
+
+
 
       <ChatWidget botMessage={botMessage} />
 
@@ -445,14 +444,14 @@ function App() {
         style={{ width: "100vw", height: "100vh" }}
         ref={mapRef}
       >
-        <TileLayer url={tileUrls[mapType]} maxZoom={20} minZoom={8.0}/>
-        <MapRefresher dependency={tileUrls[mapType]}/>
+        <TileLayer url={tileUrls[mapType]} maxZoom={20} minZoom={8.0} />
+        <MapRefresher dependency={tileUrls[mapType]} />
 
         {/* <ClickMyPos onLocation={setMyPos}/> */}
-        {targetStation && 
-        <>
-        <FlyToLocation position={targetStation} />
-        </>}
+        {targetStation &&
+          <>
+            <FlyToLocation position={targetStation} />
+          </>}
         {myPos && <FlyToLocation position={myPos} />}
 
         <LocateButton onLocation={setMyPos} getRoad={handleRoute} setMyPos={setMyPos} savedPos={savedPos} />
@@ -460,10 +459,10 @@ function App() {
         {myPos && <Marker position={myPos} icon={currentLocationIcon} />}
         <DestinationMarker />
         {route.length > 0 && (
-            <>
-              <DynamicPolyline route={route} />
-            </>
-          )}
+          <>
+            <DynamicPolyline route={route} />
+          </>
+        )}
 
 
         {myPos && <ZoomMarkers
@@ -476,8 +475,8 @@ function App() {
           onMarkerClick={handleSubwayPos}
         />}
       </MapContainer>
-         
-         {/* 카메라 제어 버튼 그룹 컴포넌트 */}
+
+      {/* 카메라 제어 버튼 그룹 컴포넌트 */}
       <CameraControlBtnGroup
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
