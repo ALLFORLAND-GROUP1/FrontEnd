@@ -11,7 +11,7 @@ import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import { loadCSV } from './modules/utils';
 import "leaflet-polylinedecorator"
 import { Box } from "@mui/material";
-import Sidebar from "./modules/Sidebar";
+import SideMenu from "./components/SideMenu/SideMenu";
 import { getRoute } from './modules/getRoute'
 import CameraControlBtnGroup from './components/CameraControlBtnGroup/CameraControlBtnGroup';
 import currentLocationIconUrl from "./assets/image/curLocation_marker.png";
@@ -89,8 +89,8 @@ function DynamicPolyline({ route }) {
   if (!route || route.length === 0) return null;
 
   return <>
-  <Polyline positions={route} pathOptions={pathOptions2} />
-  <Polyline positions={route} pathOptions={pathOptions} /></>;
+    <Polyline positions={route} pathOptions={pathOptions2} />
+    <Polyline positions={route} pathOptions={pathOptions} /></>;
 }
 
 // 지도 이동만 담당
@@ -186,7 +186,8 @@ function App() {
 
   const handleSubwayPos = async (pos, name) => {
     const currentPos = myPosRef.current; // 항상 최신값
-    const result = await getRoute({lat:currentPos[0], lng:currentPos[1]}, pos, routeAPIRef.current)
+
+    const result = await getRoute({ lat: currentPos[0], lng: currentPos[1] }, pos, routeAPIRef.current)
     setSavedPos(pos)
     if (result) {
       setRoute(result.coords);
@@ -236,7 +237,7 @@ function App() {
   useEffect(() => {
 
     document.body.style.overflow = "hidden"; // 스크롤 비활성화
-    
+
   }, [])
 
   useEffect(() => {
@@ -353,7 +354,7 @@ function App() {
     
   };
 
-  function ClickMyPos( {onLocation }) {
+  function ClickMyPos({ onLocation }) {
     useMapEvents({
       click(e) {
         onLocation([e.latlng.lat, e.latlng.lng])
@@ -375,7 +376,7 @@ function App() {
     // markersRef.current?.openPopupByKey(key);
   };
 
-   const handleInfo = (time_, day_, routeapi_, maptype_) => {
+  const handleInfo = (time_, day_, routeapi_, maptype_) => {
     setSelectedTime(time_)
     setSelectedDay(day_)
     setselectedRouteAPI(routeapi_)
@@ -386,13 +387,13 @@ function App() {
   return (
     <Box sx={{ position: "relative", height: "100vh", display: "flex" }}>
       {/* 사이드바 */}
-      <Sidebar
+      <SideMenu
         markers={markers}
         handleSelectStation={handleSelectStation}
         onChangeInfo={handleInfo}
       />
-      
-      
+
+
 
       <ChatWidget botMessage={botMessage} />
 
@@ -418,20 +419,20 @@ function App() {
         {/* <MapRefresher dependency={tileUrls[mapType]}/> */}
 
         {/* <ClickMyPos onLocation={setMyPos}/> */}
-        {targetStation && 
-        <>
-        <FlyToLocation position={targetStation} />
-        </>}
+        {targetStation &&
+          <>
+            <FlyToLocation position={targetStation} />
+          </>}
         {myPos && <FlyToLocation position={myPos} />}
 
         {myPos && <Marker position={myPos} icon={currentLocationIcon} />}
         {/* 지도 마커 찍기 보류 */}
         {/* <DestinationMarker /> */}
         {route.length > 0 && (
-            <>
-              <DynamicPolyline route={route} />
-            </>
-          )}
+          <>
+            <DynamicPolyline route={route} />
+          </>
+        )}
 
 
         {myPos && <ZoomMarkers
@@ -445,8 +446,8 @@ function App() {
           onMarkerClickOnly={handleSubwayPosOnly}
         />}
       </MapContainer>
-         
-         {/* 카메라 제어 버튼 그룹 컴포넌트 */}
+
+      {/* 카메라 제어 버튼 그룹 컴포넌트 */}
       <CameraControlBtnGroup
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
