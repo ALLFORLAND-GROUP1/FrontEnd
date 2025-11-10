@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents, useMap, Polyline } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap, Circle, Polyline } from "react-leaflet";
 import ZoomMarkers from "./modules/ZoomMarkers";
 import ChatWidget from "./modules/ChatWidget";
 import L from "leaflet";
@@ -114,66 +114,6 @@ function getDayType() {
   if (day === 0) return "일요일"; // 필요하면 추가
 }
 
-// 내 위치 버튼
-function LocateButton({ onLocation, getRoad, setMyPos, savedPos }) {
-  const map = useMap();
-  const ref = useRef(null);
-  useEffect(() => {
-    if (ref.current) {
-      L.DomEvent.disableClickPropagation(ref.current);
-    }
-  }, []);
-
-  const handleClick = () => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const { latitude, longitude } = pos.coords;
-          // const latlng = [37.54135, 127.165254];
-          const latlng = [latitude, longitude]
-          onLocation(latlng);
-          map.flyTo(latlng, 15, { duration: 1.2 });
-          setMyPos(latlng)
-          if (savedPos) {
-            getRoad(
-              { lat: latlng[0], lng: latlng[1] },
-              savedPos
-            )
-          }
-        },
-        (err) => {
-          console.error("위치 가져오기 실패:", err);
-          alert("위치 정보를 가져올 수 없습니다.");
-        }
-      );
-    } else {
-      alert("이 브라우저에서는 위치 기능을 지원하지 않습니다.");
-    }
-  };
-
-  return (
-    <div ref={ref}>
-      <button
-        onClick={handleClick}
-        style={{
-          position: "absolute",
-          top: "20px",
-          right: "20px",
-          zIndex: 1000,
-          padding: "8px 12px",
-          background: "#1976d2",
-          color: "white",
-          border: "none",
-          borderRadius: "4px",
-          cursor: "pointer",
-        }}
-      >
-        📍 내 위치
-      </button>
-    </div>
-  );
-}
-
 function MapRefresher({ dependency }) {
   const map = useMap();
 
@@ -224,18 +164,11 @@ function App() {
   const [savedPos, setSavedPos] = useState(null);
   const [botMessage, setBotMessage] = useState(null); // 봇 메시지
   const [selectedRouteAPI, setselectedRouteAPI] = useState('gh');
-  const [mapType, setMapType] = useState('aerial');
+  const [mapType, setMapType] = useState('normal');
 
   const myPosRef = useRef(myPos);
   const routeAPIRef = useRef(selectedRouteAPI)
   const markersRef = useRef(null);
-
-  const [activeMenu, setActiveMenu] = useState(null); // 'time' | 'search' | 'menu' | null
-
-  // 공통 토글 함수
-  const toggleMenu = (menu) => {
-    setActiveMenu((prev) => (prev === menu ? null : menu));
-  };
 
   const tileUrls = {
     normal: "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
@@ -251,7 +184,7 @@ function App() {
     routeAPIRef.current = selectedRouteAPI
   }, [selectedRouteAPI])
 
-  const handleSubwayPos = async (pos) => {
+  const handleSubwayPos = async (pos, name) => {
     const currentPos = myPosRef.current; // 항상 최신값
 
     const result = await getRoute({ lat: currentPos[0], lng: currentPos[1] }, pos, routeAPIRef.current)
@@ -259,13 +192,30 @@ function App() {
     if (result) {
       setRoute(result.coords);
       setInfo(result.info);
-      console.log(result.info.distance, 'km,', result.info.duration, '분')
-      const res = await fetch(
-        `http://localhost:5000/info?distance=${result.info.distance}&time=${result.info.duration}`
-      );
-      const data = await res.json();
-      setBotMessage(data.reply)
+      // console.log(result.info.distance, 'km,', result.info.duration, '분')
+      // const res = await fetch(
+      //   `http://localhost:5000/info?distance=${result.info.distance}&time=${result.info.duration}&lnglat=${pos.lng},${pos.lat}&name=${name}`
+      // );
+      // const data = await res.json();
+      // setBotMessage(data.reply)
+      return result
     }
+  }
+
+  const handleSubwayPosOnly = async (pos, name, dist, dur, type, intervalNum) => {
+    const currentPos = myPosRef.current; // 항상 최신값
+    // const result = await getRoute({lat:currentPos[0], lng:currentPos[1]}, pos, routeAPIRef.current)
+    setSavedPos(pos)
+    // if (result) {
+      // setRoute(result.coords);
+      // setInfo(result.info);
+      // console.log(result.info.distance, 'km,', result.info.duration, '분')
+    const res = await fetch(
+      `http://localhost:5000/info?distance=${dist}&time=${dur}&lnglat=${pos.lng},${pos.lat}&name=${name}&type=${type}&intervalNum=${intervalNum}`
+    );
+    const data = await res.json();
+    setBotMessage(data.reply)
+    
   }
 
   const handleRoute = async (start, end) => {
@@ -277,7 +227,7 @@ function App() {
       setInfo(result.info);
       console.log(result.info.distance, 'km,', result.info.duration, '분')
       const res = await fetch(
-        `http://localhost:5000/info?distance=${result.info.distance}&time=${result.info.duration}`
+        `http://localhost:5000/info?distance=${result.info.distance}&time=${result.info.duration}&lnglat=${end.lng},${end.lat}`
       );
       const data = await res.json();
       setBotMessage(data.reply)
@@ -377,15 +327,31 @@ function App() {
 
   const handleCurrentLocation = () => {
     const map = mapRef.current;
-    if (map && myPos) {
-      try {
-        map.flyTo(myPos, 15.5, { duration: 1.5 });
-      } catch (error) {
-        console.error("위치 초기화 에러:", error);
-      }
-    } else {
-      console.error("Map reference or current position is not available");
+    if ("geolocation" in navigator){
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          if (map && myPos) {
+            try {
+              const { latitude, longitude } = pos.coords;
+              const latlng = [latitude, longitude]
+              setMyPos(latlng)
+              map.flyTo(myPos, 15.5, { duration: 1.5 });
+              if (savedPos) {
+                handleRoute(
+                  { lat: latlng[0], lng: latlng[1] },
+                  savedPos
+                )
+              }
+            } catch (error) {
+              console.error("위치 초기화 에러:", error);
+            }
+          } else {
+            console.error("Map reference or current position is not available");
+          }
+        }
+      )
     }
+    
   };
 
   function ClickMyPos({ onLocation }) {
@@ -401,13 +367,13 @@ function App() {
     // setTargetStation(station)
 
     // 1️⃣ 지도 중심 이동
-    console.log(station.lat, station.lng)
-
+    // console.log(station.lat, station.lng)
+    
 
     // 2️⃣ 팝업 열기 (ZoomMarkers에서 제공하는 openPopupByKey 사용)
     const key = `${station.name}-${station.ho}`;
     markersRef.current?.flyToAndOpen(key, station.lat, station.lng);
-    markersRef.current?.openPopupByKey(key);
+    // markersRef.current?.openPopupByKey(key);
   };
 
   const handleInfo = (time_, day_, routeapi_, maptype_) => {
@@ -435,7 +401,8 @@ function App() {
       <MapContainer
         center={position}
         zoom={15}
-        zoomSnap={0.5}
+        zoomSnap={0.1}
+        zoomDelta={0.1}
         zoomControl={false}
         attributionControl={false}
         maxZoom={18}
@@ -444,8 +411,12 @@ function App() {
         style={{ width: "100vw", height: "100vh" }}
         ref={mapRef}
       >
-        <TileLayer url={tileUrls[mapType]} maxZoom={20} minZoom={8.0} />
-        <MapRefresher dependency={tileUrls[mapType]} />
+        <TileLayer 
+        key={tileUrls[mapType]}
+        url={tileUrls[mapType]} 
+        maxZoom={20} 
+        minZoom={8.0}/>
+        {/* <MapRefresher dependency={tileUrls[mapType]}/> */}
 
         {/* <ClickMyPos onLocation={setMyPos}/> */}
         {targetStation &&
@@ -454,10 +425,9 @@ function App() {
           </>}
         {myPos && <FlyToLocation position={myPos} />}
 
-        <LocateButton onLocation={setMyPos} getRoad={handleRoute} setMyPos={setMyPos} savedPos={savedPos} />
-
         {myPos && <Marker position={myPos} icon={currentLocationIcon} />}
-        <DestinationMarker />
+        {/* 지도 마커 찍기 보류 */}
+        {/* <DestinationMarker /> */}
         {route.length > 0 && (
           <>
             <DynamicPolyline route={route} />
@@ -471,8 +441,9 @@ function App() {
           subwayData={subwayData}
           selectedDay={selectedDay}
           selectedTime={selectedTime}
-          minZoom={13}
+          minZoom={14}
           onMarkerClick={handleSubwayPos}
+          onMarkerClickOnly={handleSubwayPosOnly}
         />}
       </MapContainer>
 

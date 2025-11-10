@@ -6,12 +6,16 @@ function SearchBox({ markers, onSelect }) {
   const [selected, setSelected] = useState(null);
   const [open, setOpen] = useState(false); // ✅ 옵션창 열림 상태 제어
 
+  // ✅ 역명 오름차순으로 정렬된 옵션
+  const sortedMarkers = [...markers].sort((a, b) =>
+    a.name.localeCompare(b.name, "ko") // 한글 정렬도 정상 작동
+  );
+
   return (
     <Box sx={{ width: "100%" }}>
       <Autocomplete
         fullWidth
-        freeSolo
-        options={markers}
+        options={sortedMarkers}
         open={open} // ✅ 수동 제어
         onOpen={() => {
           if (inputValue.trim() !== "") setOpen(true); // 입력이 있을 때만 열기
@@ -20,11 +24,11 @@ function SearchBox({ markers, onSelect }) {
         getOptionLabel={(option) => option.name || ""}
         value={selected}
         inputValue={inputValue}
-        filterOptions={(options) =>
-          options.filter(
-            (option) =>
-              // option.name &&
-              option.name.toLowerCase().includes(inputValue.toLowerCase())
+        filterOptions={(options, state) =>
+          options.filter((option) =>
+            option.name
+              .toLowerCase()
+              .startsWith(state.inputValue.toLowerCase()) // ✅ 앞글자 일치만 허용
           )
         }
         onInputChange={(event, newInputValue) => {

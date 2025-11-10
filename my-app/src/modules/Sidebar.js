@@ -40,7 +40,7 @@ export default function Sidebar({
   const [selectedTime, setSelectedTime] = useState(getCurrentTime);
   const [selectedDay, setSelectedDay] = useState(getDayType);
   const [selectedRouteAPI, setselectedRouteAPI] = useState('gh');
-  const [mapType, setMapType] = useState('aerial');
+  const [mapType, setMapType] = useState('normal');
 
   const [activeMenu, setActiveMenu] = useState(null); // 'time' | 'search' | 'menu' | null
 
@@ -68,7 +68,7 @@ export default function Sidebar({
           width: 240,
           transform: activeMenu ? "translateX(0)" : "translateX(-100%)", // ✅ 핵심 변경
           height: "100%",
-          background: "#e6e6e6ff",
+          background: "#ffffffff",
           boxShadow: "2px 0 5px rgba(0,0,0,0.3)",
           transition: "transform 0.3s ease-in-out",
           p: 2,

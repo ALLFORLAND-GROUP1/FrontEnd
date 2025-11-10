@@ -1,142 +1,176 @@
 import { useState, useEffect, useRef } from "react";
+import {
+  Box,
+  Paper,
+  IconButton,
+  TextField,
+  Typography,
+  Divider,
+  Stack,
+  Tooltip
+} from "@mui/material";
+import SendIcon from "@mui/icons-material/Send";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
-function ChatWidget({botMessage}) {
+/**
+ * props:
+ *  - botMessage: string | undefined
+ */
+function ChatWidget({ botMessage }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-    const messagesEndRef = useRef(null); // 스크롤 제어용 ref
+  const messagesEndRef = useRef(null);
 
-
-  // 메시지 전송
   const sendMessage = () => {
     if (!input.trim()) return;
     const now = new Date();
-    const timeString = now.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-    setMessages((prev) => [
-      ...prev,
-      { text: input, sender: "me", time: timeString },
-    ]);
+    const timeString = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    setMessages((prev) => [...prev, { text: input, sender: "me", time: timeString }]);
     setInput("");
   };
 
+  // 스크롤 맨 아래로
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "auto" });
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
   }, [messages]);
 
+  // 외부(bot) 메시지 수신
   useEffect(() => {
     if (botMessage) {
       const now = new Date();
       const timeString = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-      setMessages((prev) => [
-        ...prev,
-        { text: botMessage, sender: "other", time: timeString }
-      ]);
+      setMessages((prev) => [...prev, { text: botMessage, sender: "other", time: timeString }]);
+      // 새 메시지 오면 자동으로 위젯 펼치고 싶다면 아래 주석 해제
+      setIsOpen(true);
     }
   }, [botMessage]);
 
   return (
-    <div
-      style={{
+    <Paper
+      elevation={6}
+      sx={{
         position: "fixed",
-        bottom: isOpen ? "0" : "-460px", // 열렸을 때 0, 닫혔을 때 화면 아래로 숨김
-        right: "20px",
-        width: "350px",
-        height: "500px",
-        backgroundColor: "#fff",
-        borderRadius: "10px 10px 0 0",
-        boxShadow: "0 -2px 10px rgba(0,0,0,0.2)",
-        transition: "bottom 0.3s ease-in-out",
+        right: 20,
+        bottom: 0,
+        width: 360,
+        height: 520,
+        borderRadius: "12px 12px 0 0",
+        overflow: "hidden",
         display: "flex",
         flexDirection: "column",
-        overflow: "hidden",
-        zIndex: 1000,
+        transition: (theme) => theme.transitions.create("transform", { duration: 300 }),
+        transform: isOpen ? "translateY(0)" : "translateY(calc(100% - 44px))", // 헤더만 보이도록
+        zIndex: 1300,
+        bgcolor: "background.paper",
+        // border: (theme) => `1px solid ${theme.palette.divider}`,
       }}
     >
-      {/* 헤더 영역 */}
-      <div
-        style={{
-          background: "#474747ff",
-          color: "#ffffffff",
-          padding: "10px",
+      {/* 헤더 */}
+      <Box
+        onClick={() => setIsOpen((v) => !v)}
+        sx={{
+          bgcolor: "grey.900",
+          color: "common.white",
+          px: 1.5,
+          py: 1,
+          display: "flex",
+          alignItems: "center",
           cursor: "pointer",
+          userSelect: "none",
         }}
-        onClick={() => setIsOpen(!isOpen)}
       >
-        {isOpen ? "▼" : "▲"}
-      </div>
+        <Typography variant="subtitle2" sx={{ fontWeight: 600, flex: 1 }}>
+          채팅
+        </Typography>
+        <IconButton
+          size="small"
+          sx={{
+            color: "common.white",
+            "&:hover": { bgcolor: "rgba(255,255,255,0.12)" },
+          }}
+        >
+          {isOpen ? <ExpandMoreIcon /> : <ExpandLessIcon />}
+        </IconButton>
+      </Box>
 
-      {/* 메시지 영역 */}
-      <div style={{ flex: 1, padding: "10px", overflowY: "auto" }}>
-        {messages.map((msg, idx) => (
-          <div
-            key={idx}
-            style={{
-              textAlign: msg.sender === "me" ? "right" : "left",
-              margin: "5px 0",
-            }}
-          >
-            <div
-              style={{
-                display: "inline-block",
-                padding: "6px 10px",
-                borderRadius: "12px",
-                background: msg.sender === "me" ? "#1976d2" : "#eee",
-                color: msg.sender === "me" ? "#fff" : "#000",
-                maxWidth: "80%",
-              }}
-            >
-              {msg.text}
-            </div>
-            <div
-              style={{
-                fontSize: "11px",
-                color: "#666",
-                marginTop: "2px"
-              }}
-            >
-              {msg.time}
-            </div>
-          </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
+      <Divider />
 
-      {/* 본문 영역 */}
-      {/* <div style={{ flex: 1, padding: "10px", overflowY: "auto" }}>
-      </div> */}
+      {/* 메시지 리스트 */}
+      <Box sx={{ flex: 1, overflowY: "auto", p: 1.5, bgcolor: "grey.50" }}>
+        <Stack spacing={1}>
+          {messages.map((msg, idx) => {
+            const mine = msg.sender === "me";
+            return (
+              <Box key={idx} sx={{ display: "flex", justifyContent: mine ? "flex-end" : "flex-start" }}>
+                <Box sx={{ maxWidth: "80%" }}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      px: 1.25,
+                      py: 0.75,
+                      borderRadius: 2,
+                      bgcolor: mine ? "primary.main" : "grey.200",
+                      color: mine ? "primary.contrastText" : "text.primary",
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                      {msg.text}
+                    </Typography>
+                  </Paper>
+                  <Typography
+                    variant="caption"
+                    sx={{ mt: 0.25, display: "block", color: "text.secondary", textAlign: mine ? "right" : "left" }}
+                  >
+                    {msg.time}
+                  </Typography>
+                </Box>
+              </Box>
+            );
+          })}
+          <div ref={messagesEndRef} />
+        </Stack>
+      </Box>
+
+      <Divider />
 
       {/* 입력 영역 */}
-      <div style={{padding: "5px", borderTop: "1px solid #ccc", display: "flex", alignItems:"center"}}>
-        <input
-          type="text"
+      <Box sx={{ p: 1, display: "flex", gap: 1, alignItems: "center", bgcolor: "background.paper" }}>
+        <TextField
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()} // 엔터 입력
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           placeholder="메시지를 입력하세요"
-          style={{flex: 1, padding: "5px", border: "none", outline: "none"}}
+          size="small"
+          fullWidth
+          variant="outlined"
+          sx={{
+            bgcolor: "common.white",
+            "& .MuiOutlinedInput-root": {
+              borderRadius: 2,
+            },
+          }}
         />
-        <button
-        onClick={sendMessage}
-            style={{
-            marginLeft: "8px",
-            padding: "6px 12px",
-            background: "#007bff",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer"
-            }}
-        >
-        전송
-        </button>
-      </div>
-    </div>
+        <Tooltip title="전송">
+          <span>
+            <IconButton
+              color="primary"
+              onClick={sendMessage}
+              disabled={!input.trim()}
+              sx={{
+                bgcolor: "common.white",
+                border: (theme) => `1px solid ${theme.palette.divider}`,
+                "&:hover": { bgcolor: "grey.100" },
+              }}
+              aria-label="전송"
+            >
+              <SendIcon />
+            </IconButton>
+          </span>
+        </Tooltip>
+      </Box>
+    </Paper>
   );
 }
 
