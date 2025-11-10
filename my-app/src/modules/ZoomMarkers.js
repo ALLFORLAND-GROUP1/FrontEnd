@@ -34,7 +34,7 @@ function findClosestTimeColumn(selectedTime, row) {
 
 // 마커 & 팝업
 const ZoomMarkers = forwardRef(function ZoomMarkers(
-  { markers, subwayData, selectedDay, selectedTime, minZoom = 10, onMarkerClick },
+  { markers, subwayData, selectedDay, selectedTime, minZoom = 10, onMarkerClick, onMarkerClickOnly },
   ref
 ) {
   const map = useMap();
@@ -42,7 +42,10 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
   const [mapBounds, setMapBounds] = useState(map.getBounds()); // ✅ 현재 화면 경계 저장
   const prevZoom = useRef(map.getZoom()); // 이전 줌값 기억
   const markerRefs = useRef({});
-
+  const [markerPos, setMarkerPos] = useState(null)
+  const [dist, setDist] = useState(0)
+  const [dur, setDur] = useState(0)
+ 
   useImperativeHandle(ref, () => ({
     flyToAndOpen: async (key, lat, lng, targetZoom = 15) => {
       if (!map) return;
@@ -56,7 +59,14 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
       if (lat != null && lng != null) {
         map.flyTo([lat, lng], targetZoom, { duration: 1.2 });
       }
-      onMarkerClick({'lat': lat, 'lng':lng})
+      // onMarkerClick({'lat': lat, 'lng':lng}, key.slice(0, -2))
+
+      onMarkerClick({'lat': lat, 'lng':lng}, key.slice(0, -2)).then(distance => {
+                  setDist(parseFloat(distance.info.distance))
+                  setDur(parseFloat(distance.info.duration))
+                })
+
+
       // 3️⃣ 지도 이동/확대 완료 감지 후 실행
       const waitForRender = () => {
         const marker = markerRefs.current[key];
@@ -76,14 +86,14 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
       map.on("moveend", waitForRender);
       map.on("zoomend", waitForRender);
     },
-    openPopupByKey: (key) => {
-      const marker = markerRefs.current[key];
-      if (marker) {
-        marker.openPopup();
-        onMarkerClick(marker._latlng)
-        console.log(marker._latlng)
-      }
-    },
+    // openPopupByKey: (key) => {
+    //   const marker = markerRefs.current[key];
+    //   if (marker) {
+    //     marker.openPopup();
+    //     onMarkerClick(marker._latlng)
+    //     console.log(marker._latlng)
+    //   }
+    // },
   }));
 
   useEffect(() => {
@@ -143,7 +153,13 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
             click: (e) => {
               setTimeout(() => e.target.openPopup(), 200)
               if (onMarkerClick) {
-                onMarkerClick(e.latlng, m.name)
+                setMarkerPos(e.latlng)
+                onMarkerClick(e.latlng, m.name).then(distance => {
+                  console.log(distance.info.distance, distance.info.duration)
+                  setDist(parseFloat(distance.info.distance))
+                  setDur(parseFloat(distance.info.duration))
+                })
+                // console.log(dist.then(res=>res))
               }
             }
 
@@ -177,8 +193,9 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
                       const interval = col && row ? row[col] : "0";
                       // 운행 간격에 따른 색상 결정 (6단계 구분)
                       let intervalClass = 'no-service';
+                      let intervalNum = null
                       if (interval !== '0') {
-                        const intervalNum = parseInt(interval);
+                        intervalNum = parseFloat(interval);
                         if (intervalNum < 20) {
                           intervalClass = 'interval-0'; // 0~9분: 매우 빠름
                         } else if (intervalNum < 40) {
@@ -195,7 +212,12 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
                       }
                       return (
                         <button key={i} className="interval-item"
-                        onClick={(e) => console.log(type)}>
+                        onClick={(e) => {
+                          if (onMarkerClickOnly){
+                            console.log(markerPos.lat, markerPos.lng, dist, dur, m.name, type, intervalNum)
+                            onMarkerClickOnly(markerPos, m.name, dist, dur, type, intervalNum)
+                          }
+                        }}>
                           <span className="direction">{type}</span>
                           <span className={`interval ${intervalClass}`}>
                             {interval}

@@ -191,13 +191,30 @@ function App() {
     if (result) {
       setRoute(result.coords);
       setInfo(result.info);
-      console.log(result.info.distance, 'km,', result.info.duration, '분')
-      const res = await fetch(
-        `http://localhost:5000/info?distance=${result.info.distance}&time=${result.info.duration}&lnglat=${pos.lng},${pos.lat}&name=${name}`
-      );
-      const data = await res.json();
-      setBotMessage(data.reply)
+      // console.log(result.info.distance, 'km,', result.info.duration, '분')
+      // const res = await fetch(
+      //   `http://localhost:5000/info?distance=${result.info.distance}&time=${result.info.duration}&lnglat=${pos.lng},${pos.lat}&name=${name}`
+      // );
+      // const data = await res.json();
+      // setBotMessage(data.reply)
+      return result
     }
+  }
+
+  const handleSubwayPosOnly = async (pos, name, dist, dur, type, intervalNum) => {
+    const currentPos = myPosRef.current; // 항상 최신값
+    // const result = await getRoute({lat:currentPos[0], lng:currentPos[1]}, pos, routeAPIRef.current)
+    setSavedPos(pos)
+    // if (result) {
+      // setRoute(result.coords);
+      // setInfo(result.info);
+      // console.log(result.info.distance, 'km,', result.info.duration, '분')
+    const res = await fetch(
+      `http://localhost:5000/info?distance=${dist}&time=${dur}&lnglat=${pos.lng},${pos.lat}&name=${name}&type=${type}&intervalNum=${intervalNum}`
+    );
+    const data = await res.json();
+    setBotMessage(data.reply)
+    
   }
 
   const handleRoute = async (start, end) => {
@@ -393,7 +410,11 @@ function App() {
         style={{ width: "100vw", height: "100vh" }}
         ref={mapRef}
       >
-        <TileLayer url={tileUrls[mapType]} maxZoom={20} minZoom={8.0}/>
+        <TileLayer 
+        key={tileUrls[mapType]}
+        url={tileUrls[mapType]} 
+        maxZoom={20} 
+        minZoom={8.0}/>
         {/* <MapRefresher dependency={tileUrls[mapType]}/> */}
 
         {/* <ClickMyPos onLocation={setMyPos}/> */}
@@ -404,7 +425,8 @@ function App() {
         {myPos && <FlyToLocation position={myPos} />}
 
         {myPos && <Marker position={myPos} icon={currentLocationIcon} />}
-        <DestinationMarker />
+        {/* 지도 마커 찍기 보류 */}
+        {/* <DestinationMarker /> */}
         {route.length > 0 && (
             <>
               <DynamicPolyline route={route} />
@@ -420,6 +442,7 @@ function App() {
           selectedTime={selectedTime}
           minZoom={14}
           onMarkerClick={handleSubwayPos}
+          onMarkerClickOnly={handleSubwayPosOnly}
         />}
       </MapContainer>
          

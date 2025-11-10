@@ -17,8 +17,8 @@ const PORT = 5000;
 
 // 경로 거리 및 시간 수신 프록시
 app.get("/info", async (req, res) => {
-  const {distance, time, lnglat, name} = req.query;
-  console.log(distance, time, lnglat, name)
+  const {distance, time, lnglat, name, type, intervalNum} = req.query;
+  console.log(distance, time, lnglat, name, type, intervalNum)
   // 언어 모델 입력 결과 수신 후 적용
   const addrRes = await fetch(
     `https://api.vworld.kr/req/address?service=address&request=getAddress&version=2.0&crs=epsg:4326&point=${lnglat}&format=json&type=both&zipcode=true&simple=false&key=${process.env.ADDR_KEY}`
@@ -29,7 +29,7 @@ app.get("/info", async (req, res) => {
   if (typeof name == "undefined")
     res.json({reply: `${addr}\n거리: ${distance}km, 시간: ${time}분`});
   else
-    res.json({reply: `${name}역\n거리: ${distance}km, 시간: ${time}분`});
+    res.json({reply: `${name}역\n거리: ${distance}km, 시간: ${time}분, 방향: ${type}, 혼잡도: ${intervalNum}`});
 })      
 
 // ORS 경로 API 프록시
