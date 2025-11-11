@@ -93,7 +93,6 @@ export default function Sidebar({
                 >
                   <MenuItem value="ors">OpenRouteService</MenuItem>
                   <MenuItem value="gh">GraphHopper</MenuItem>
-                  <MenuItem value="tmap" disabled>TMAP</MenuItem>
                 </Select>
               </FormControl>
             </Box>

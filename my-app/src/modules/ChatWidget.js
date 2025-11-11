@@ -17,7 +17,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
  * props:
  *  - botMessage: string | undefined
  */
-function ChatWidget({ botMessage }) {
+function ChatWidget({ botMessage, infoMessage }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -46,6 +46,16 @@ function ChatWidget({ botMessage }) {
       setIsOpen(true);
     }
   }, [botMessage]);
+
+  useEffect(() => {
+    if (infoMessage) {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      setMessages((prev) => [...prev, { text: infoMessage, sender: "me", time: timeString }]);
+      // 새 메시지 오면 자동으로 위젯 펼치고 싶다면 아래 주석 해제
+      setIsOpen(true);
+    }
+  }, [infoMessage]);
 
   return (
     <Paper
