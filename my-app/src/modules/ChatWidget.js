@@ -17,10 +17,11 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
  * props:
  *  - botMessage: string | undefined
  */
-function ChatWidget({ botMessage }) {
+function ChatWidget({ botMessage, infoMessage }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const [isLLMLoading, setIsLLMLoading] = useState(false); // LLM 응답 대기 상태
   const messagesEndRef = useRef(null);
 
   const sendMessage = () => {
@@ -39,6 +40,7 @@ function ChatWidget({ botMessage }) {
   // 외부(bot) 메시지 수신
   useEffect(() => {
     if (botMessage) {
+      setIsLLMLoading(false); // 응답 도착 시 타이핑 종료
       const now = new Date();
       const timeString = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
       setMessages((prev) => [...prev, { text: botMessage, sender: "other", time: timeString }]);
@@ -46,6 +48,17 @@ function ChatWidget({ botMessage }) {
       setIsOpen(true);
     }
   }, [botMessage]);
+
+  useEffect(() => {
+    if (infoMessage) {
+      setIsLLMLoading(true); // 사용자가 역 선택 시 타이핑 시작
+      const now = new Date();
+      const timeString = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      setMessages((prev) => [...prev, { text: infoMessage, sender: "me", time: timeString }]);
+      // 새 메시지 오면 자동으로 위젯 펼치고 싶다면 아래 주석 해제
+      setIsOpen(true);
+    }
+  }, [infoMessage]);
 
   return (
     <Paper
@@ -129,6 +142,59 @@ function ChatWidget({ botMessage }) {
               </Box>
             );
           })}
+
+          {/* LLM 점수 분석 중 애니메이션 */}
+          {isLLMLoading && (
+            <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
+              <Box sx={{ maxWidth: "80%" }}>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    px: 2,
+                    py: 2,
+                    borderRadius: 2,
+                    bgcolor: "grey.200",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  <Typography
+                    fontSize={14.5}
+                    sx={{ color: "primary.main", fontWeight: "bold", mr: 0.5 }}
+                  >
+                    점수 분석 중
+                  </Typography>
+                  <Box sx={{ display: "inline-flex", gap: 0.5 }}>
+                    {[0, 1, 2].map((i) => (
+                      <Box
+                        key={i}
+                        sx={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: "50%",
+                          bgcolor: "grey.500",
+                          animation: "typing 1.4s infinite",
+                          animationDelay: `${i * 0.2}s`,
+                          "@keyframes typing": {
+                            "0%, 60%, 100%": {
+                              opacity: 0.3,
+                              transform: "translateY(0)",
+                            },
+                            "30%": {
+                              opacity: 1,
+                              transform: "translateY(-8px)",
+                            },
+                          },
+                        }}
+                      />
+                    ))}
+                  </Box>
+                </Paper>
+              </Box>
+            </Box>
+          )}
+
           <div ref={messagesEndRef} />
         </Stack>
       </Box>

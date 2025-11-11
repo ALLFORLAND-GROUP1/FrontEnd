@@ -125,9 +125,9 @@ export default function SideMenu({
                             textShadow: '0 2px 6px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2)',
                         }}
                     >
-                        지하철
+                        지하철 탑승
                         <br />
-                        혼잡도 분석
+                        만족도 분석
                     </Typography>
                 </LogoContainer>
 
@@ -246,7 +246,7 @@ export default function SideMenu({
                                 >
                                     <MenuItem value="ors">OpenRouteService</MenuItem>
                                     <MenuItem value="gh">GraphHopper</MenuItem>
-                                    <MenuItem value="tmap" disabled>TMAP</MenuItem>
+                                    {/* <MenuItem value="tmap" disabled>TMAP</MenuItem> */}
                                 </Select>
                             </FormControl>
                         </CardContent>

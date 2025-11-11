@@ -163,6 +163,7 @@ function App() {
   const [info, setInfo] = useState(null); // 거리/시간 정보
   const [savedPos, setSavedPos] = useState(null);
   const [botMessage, setBotMessage] = useState(null); // 봇 메시지
+  const [infoMessage, setInfoMessage] = useState(null); // 봇 메시지
   const [selectedRouteAPI, setselectedRouteAPI] = useState('gh');
   const [mapType, setMapType] = useState('normal');
 
@@ -210,11 +211,31 @@ function App() {
       // setRoute(result.coords);
       // setInfo(result.info);
       // console.log(result.info.distance, 'km,', result.info.duration, '분')
-    const res = await fetch(
-      `http://localhost:5000/info?distance=${dist}&time=${dur}&lnglat=${pos.lng},${pos.lat}&name=${name}&type=${type}&intervalNum=${intervalNum}`
-    );
+
+      console.log(pos, name, dist, dur, type, intervalNum)
+
+    setInfoMessage(`${name}역\n거리: ${dist}km\n시간: ${dur}분\n방향: ${type}\n혼잡도: ${intervalNum}%`)
+
+    const res = await fetch("http://localhost:8080/api/info", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        distanceMeters: dist,
+        timeMinutes: dur,
+        latitude: pos.lat,
+        longitude: pos.lng,
+        stationName: name,
+        direction:type,
+        notes:'test',
+        currentLocation:'서울',
+        congestionLevel: intervalNum,
+      }),
+    });
     const data = await res.json();
-    setBotMessage(data.reply)
+    // console.log(data)
+    setBotMessage(data.data.rawAnswer)
     
   }
 
@@ -336,12 +357,12 @@ function App() {
               const latlng = [latitude, longitude]
               setMyPos(latlng)
               map.flyTo(myPos, 15.5, { duration: 1.5 });
-              if (savedPos) {
-                handleRoute(
-                  { lat: latlng[0], lng: latlng[1] },
-                  savedPos
-                )
-              }
+              // if (savedPos) {
+              //   handleRoute(
+              //     { lat: latlng[0], lng: latlng[1] },
+              //     savedPos
+              //   )
+              // }
             } catch (error) {
               console.error("위치 초기화 에러:", error);
             }
@@ -395,7 +416,7 @@ function App() {
 
 
 
-      <ChatWidget botMessage={botMessage} />
+      <ChatWidget botMessage={botMessage} infoMessage={infoMessage} />
 
       {/* 지도 */}
       <MapContainer

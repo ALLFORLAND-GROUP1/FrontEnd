@@ -186,7 +186,7 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
                 </div>
 
                 <div className="subway-content">
-                  <div className="intervals-title">🚇 운행 간격</div>
+                  <div className="intervals-title">🚇 혼잡도 </div>
                   <div className="intervals-list">
                     {upDownTypes.map((type, i) => {
                       const row = directions.find((d) => d["upDown"] === type);
@@ -214,7 +214,7 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
                         <button key={i} className="interval-item"
                         onClick={(e) => {
                           if (onMarkerClickOnly){
-                            console.log(markerPos.lat, markerPos.lng, dist, dur, m.name, type, intervalNum)
+                            // console.log(markerPos.lat, markerPos.lng, dist, dur, m.name, type, intervalNum)
                             onMarkerClickOnly(markerPos, m.name, dist, dur, type, intervalNum)
                           }
                         }}>

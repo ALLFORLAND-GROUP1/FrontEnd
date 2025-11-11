@@ -29,7 +29,7 @@ app.get("/info", async (req, res) => {
   if (typeof name == "undefined")
     res.json({reply: `${addr}\n거리: ${distance}km, 시간: ${time}분`});
   else
-    res.json({reply: `${name}역\n거리: ${distance}km, 시간: ${time}분, 방향: ${type}, 혼잡도: ${intervalNum}`});
+    res.json({reply: `${name}역\n거리: ${distance}km \n시간: ${time}분 \n방향: ${type} \n혼잡도: ${intervalNum}%`});
 })      
 
 // ORS 경로 API 프록시
