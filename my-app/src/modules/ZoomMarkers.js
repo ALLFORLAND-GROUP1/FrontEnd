@@ -39,6 +39,7 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
 ) {
   const map = useMap();
   const [visible, setVisible] = useState(map.getZoom() >= minZoom);
+  const [selectedMarkerKey, setSelectedMarkerKey] = useState(null);
   const [mapBounds, setMapBounds] = useState(map.getBounds()); // ✅ 현재 화면 경계 저장
   const prevZoom = useRef(map.getZoom()); // 이전 줌값 기억
   const markerRefs = useRef({});
@@ -133,10 +134,15 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
   }, [map]);
   
   // const bounds = map.getBounds();
-  if (!visible) return null;
+  if (!visible && !selectedMarkerKey) return null;
   return (
     <>
       {markers
+        .filter((m) => {
+          const key = `${m.name}-${m.ho}`;
+          // ✅ 줌 축소 시에도 선택된 마커는 계속 표시
+          return visible || selectedMarkerKey === key;
+        })
         .filter((m) => mapBounds.contains(L.latLng(m.lat, m.lng)))
         .map((m) => {
         // ✅ 고유 key 생성 (name-ho 조합)
@@ -161,6 +167,7 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
                 })
                 // console.log(dist.then(res=>res))
               }
+              setSelectedMarkerKey(key);
             }
 
           }}
@@ -172,6 +179,9 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
               closeButton={true}
               maxWidth={280}
               className="subway-popup-modern"
+              eventHandlers={{
+                close: () => setSelectedMarkerKey(null), // ✅ 팝업 닫을 때 선택 해제
+              }}
             >
               <div className="subway-info-card">
                 <div className="subway-header">
