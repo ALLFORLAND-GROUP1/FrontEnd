@@ -1,6 +1,7 @@
 import { useState, useEffect, memo, useRef, forwardRef, useImperativeHandle } from "react";
 import { Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
+import MarkerClusterGroup from "react-leaflet-markercluster";
 
 const markerIcon_ = L.icon({
   iconUrl: "iconrail2.png",
@@ -30,22 +31,20 @@ function findClosestTimeColumn(selectedTime, row) {
   return closest;
 }
 
-
-
 // 마커 & 팝업
 const ZoomMarkers = forwardRef(function ZoomMarkers(
   { markers, subwayData, selectedDay, selectedTime, minZoom = 10, onMarkerClick, onMarkerClickOnly },
   ref
 ) {
   const map = useMap();
-  const [visible, setVisible] = useState(map.getZoom() >= minZoom);
+  // const [visible, setVisible] = useState(map.getZoom() >= minZoom);
   const [selectedMarkerKey, setSelectedMarkerKey] = useState(null);
-  const [mapBounds, setMapBounds] = useState(map.getBounds()); // ✅ 현재 화면 경계 저장
+  // const [mapBounds, setMapBounds] = useState(map.getBounds()); // ✅ 현재 화면 경계 저장
   const prevZoom = useRef(map.getZoom()); // 이전 줌값 기억
   const markerRefs = useRef({});
-  const [markerPos, setMarkerPos] = useState(null)
-  const [dist, setDist] = useState(0)
-  const [dur, setDur] = useState(0)
+  const markerPosRef = useRef(null);
+  const distRef = useRef(0);
+  const durRef = useRef(0);
  
   useImperativeHandle(ref, () => ({
     flyToAndOpen: async (key, lat, lng, targetZoom = 15) => {
@@ -63,15 +62,17 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
       // onMarkerClick({'lat': lat, 'lng':lng}, key.slice(0, -2))
 
       onMarkerClick({'lat': lat, 'lng':lng}, key.slice(0, -2)).then(distance => {
-                  setDist(parseFloat(distance.info.distance))
-                  setDur(parseFloat(distance.info.duration))
-                })
+        const d = parseFloat(distance.info.distance);
+        const t = parseFloat(distance.info.duration);
 
+        distRef.current = d;
+        durRef.current = t;
+      })
 
-      // 3️⃣ 지도 이동/확대 완료 감지 후 실행
       const waitForRender = () => {
         const marker = markerRefs.current[key];
         if (marker) {
+          console.log('asdf')
           // ✅ 마커 렌더 확인 후 팝업 오픈
           marker.openPopup();
           console.log([lat, lng], marker._latlng)
@@ -83,67 +84,61 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
           setTimeout(waitForRender, 200);
         }
       };
-
       map.on("moveend", waitForRender);
       map.on("zoomend", waitForRender);
     },
-    // openPopupByKey: (key) => {
-    //   const marker = markerRefs.current[key];
-    //   if (marker) {
-    //     marker.openPopup();
-    //     onMarkerClick(marker._latlng)
-    //     console.log(marker._latlng)
-    //   }
-    // },
   }));
 
   useEffect(() => {
-    const handleZoom = () => {
-      const zoom = map.getZoom();
+    if (selectedMarkerKey) {
+      const marker = markerRefs.current[selectedMarkerKey];
+      if (marker) marker.openPopup();
+    }
+  }, [map.getZoom()]);
 
-      // 확대: minZoom 막 넘은 순간
-      if (prevZoom.current < minZoom && zoom >= minZoom) {
-        setVisible(true);
-        // console.log("마커 최초 렌더 실행!");
-      }
-
-      // 축소: minZoom 아래로 내려간 순간
-      if (prevZoom.current >= minZoom && zoom < minZoom) {
-        setVisible(false);
-        // console.log("마커 제거!");
-      }
-
-      prevZoom.current = zoom; // 현재 줌값 저장
-    };
-
-    map.on("zoomend", handleZoom);
-    return () => map.off("zoomend", handleZoom);
-  }, [map, minZoom]);
-
-  useEffect(() => {
-    const updateBounds = () => setMapBounds(map.getBounds());
-    updateBounds(); // 초기 렌더 시 1회 실행
-
-    map.on("moveend", updateBounds);
-    map.on("zoomend", updateBounds);
-
-    return () => {
-      map.off("moveend", updateBounds);
-      map.off("zoomend", updateBounds);
-    };
-  }, [map]);
-  
-  // const bounds = map.getBounds();
-  if (!visible && !selectedMarkerKey) return null;
   return (
-    <>
+    <MarkerClusterGroup
+    key={selectedTime}
+      chunkedLoading
+      animate={true}
+      spiderfyOnMaxZoom={false}
+      disableClusteringAtZoom={15}
+      maxClusterRadius={120}
+      iconCreateFunction={(cluster) => {
+        const markers = cluster.getAllChildMarkers();
+        const nums = markers
+          .map((m) => m.options.intervalNum)
+          .filter((v) => v !== null && !isNaN(v));
+
+        const avg =
+          nums.length > 0
+            ? nums.reduce((a, b) => a + b, 0) / nums.length
+            : 0;
+
+        let color = "gray";
+        if (avg < 20) color = "#4CAF50";
+        else if (avg < 40) color = "#FFC107";
+        else if (avg < 60) color = "#FF9800";
+        else color = "#F44336";
+
+        return L.divIcon({
+          html: `<div class="cluster-icon" style="
+            background:${color};
+            color:white;
+            border-radius:50%;
+            width:40px;
+            height:40px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-weight:bold;">
+              ${Math.round(avg)}
+            </div>`,
+          className: "",
+        });
+      }}
+    >
       {markers
-        .filter((m) => {
-          const key = `${m.name}-${m.ho}`;
-          // ✅ 줌 축소 시에도 선택된 마커는 계속 표시
-          return visible || selectedMarkerKey === key;
-        })
-        .filter((m) => mapBounds.contains(L.latLng(m.lat, m.lng)))
         .map((m) => {
         // ✅ 고유 key 생성 (name-ho 조합)
         const key = `${m.name}-${m.ho}`;
@@ -154,34 +149,44 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
         const upDownTypes = [...new Set(directions.map((row) => row["upDown"]))];
         const col = directions.length > 0 ? findClosestTimeColumn(selectedTime, directions[0]) : null;
 
+        // intervalNum 계산
+        let intervalNum = null;
+        if (col && directions[0]) {
+          const value = parseFloat(directions[0][col]);
+          intervalNum = isNaN(value) ? null : value;
+        }
+
         return (
-          <Marker key={key} position={[m.lat, m.lng]} icon={markerIcon_} ref={(el) => (markerRefs.current[key] = el)} eventHandlers={{
+          <Marker key={key} position={[m.lat, m.lng]} icon={markerIcon_} ref={(el) => (markerRefs.current[key] = el)} intervalNum={intervalNum} eventHandlers={{
             click: (e) => {
-              setTimeout(() => e.target.openPopup(), 200)
+              setTimeout(() => {
+                e.target.openPopup();
+              }, 200); 
+              // setTimeout(() => e.target.openPopup(), 200)
               if (onMarkerClick) {
-                setMarkerPos(e.latlng)
+                // rerender 없음
+                markerPosRef.current = e.latlng;
+
                 onMarkerClick(e.latlng, m.name).then(distance => {
-                  console.log(distance.info.distance, distance.info.duration)
-                  setDist(parseFloat(distance.info.distance))
-                  setDur(parseFloat(distance.info.duration))
-                })
-                // console.log(dist.then(res=>res))
+                  const d = parseFloat(distance.info.distance);
+                  const t = parseFloat(distance.info.duration);
+
+                  distRef.current = d;
+                  durRef.current = t;
+
+                  console.log("거리:", d, "시간:", t);
+                });
               }
-              setSelectedMarkerKey(key);
+              // setSelectedMarkerKey(key);
             }
 
           }}
-            // opacity={map.getZoom() < minZoom ? 0 : 1}
-            interactive={true}
           >
             <Popup
               autoPan={false}
               closeButton={true}
               maxWidth={280}
               className="subway-popup-modern"
-              eventHandlers={{
-                close: () => setSelectedMarkerKey(null), // ✅ 팝업 닫을 때 선택 해제
-              }}
             >
               <div className="subway-info-card">
                 <div className="subway-header">
@@ -224,8 +229,8 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
                         <button key={i} className="interval-item"
                         onClick={(e) => {
                           if (onMarkerClickOnly){
-                            // console.log(markerPos.lat, markerPos.lng, dist, dur, m.name, type, intervalNum)
-                            onMarkerClickOnly(markerPos, m.name, dist, dur, type, intervalNum)
+                            // console.log(markerPosRef, distRef, durRef, m.name, type, intervalNum)
+                            onMarkerClickOnly(markerPosRef.current, m.name, distRef.current, durRef.current, type, intervalNum)
                           }
                         }}>
                           <span className="direction">{type}</span>
@@ -249,7 +254,7 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
           </Marker>
         );
       })}
-    </>
+    </MarkerClusterGroup>
   );
 });
 
