@@ -11,6 +11,8 @@ import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import { loadCSV } from './modules/utils';
 import "leaflet-polylinedecorator"
 import { Box } from "@mui/material";
+import CongestionClusterLayer from "./components/CongestionClusterLayer/CongestionClusterLayer";
+import CongestionLegend from "./components/CongestionLegend/CongestionLegend";
 import SideMenu from "./components/SideMenu/SideMenu";
 import { getRoute } from './modules/getRoute'
 import CameraControlBtnGroup from './components/CameraControlBtnGroup/CameraControlBtnGroup';
@@ -208,11 +210,11 @@ function App() {
     // const result = await getRoute({lat:currentPos[0], lng:currentPos[1]}, pos, routeAPIRef.current)
     setSavedPos(pos)
     // if (result) {
-      // setRoute(result.coords);
-      // setInfo(result.info);
-      // console.log(result.info.distance, 'km,', result.info.duration, '분')
+    // setRoute(result.coords);
+    // setInfo(result.info);
+    // console.log(result.info.distance, 'km,', result.info.duration, '분')
 
-      console.log(pos, name, dist, dur, type, intervalNum)
+    console.log(pos, name, dist, dur, type, intervalNum)
 
     setInfoMessage(`${name}역\n거리: ${dist}km\n시간: ${dur}분\n방향: ${type}\n혼잡도: ${intervalNum}%`)
 
@@ -227,16 +229,16 @@ function App() {
         latitude: pos.lat,
         longitude: pos.lng,
         stationName: name,
-        direction:type,
-        notes:'test',
-        currentLocation:'서울',
+        direction: type,
+        notes: 'test',
+        currentLocation: '서울',
         congestionLevel: intervalNum,
       }),
     });
     const data = await res.json();
     // console.log(data)
     setBotMessage(data.data.rawAnswer)
-    
+
   }
 
   const handleRoute = async (start, end) => {
@@ -348,7 +350,7 @@ function App() {
 
   const handleCurrentLocation = () => {
     const map = mapRef.current;
-    if ("geolocation" in navigator){
+    if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           if (map && myPos) {
@@ -372,7 +374,7 @@ function App() {
         }
       )
     }
-    
+
   };
 
   function ClickMyPos({ onLocation }) {
@@ -389,7 +391,7 @@ function App() {
 
     // 1️⃣ 지도 중심 이동
     // console.log(station.lat, station.lng)
-    
+
 
     // 2️⃣ 팝업 열기 (ZoomMarkers에서 제공하는 openPopupByKey 사용)
     const key = `${station.name}-${station.ho}`;
@@ -432,11 +434,11 @@ function App() {
         style={{ width: "100vw", height: "100vh" }}
         ref={mapRef}
       >
-        <TileLayer 
-        key={tileUrls[mapType]}
-        url={tileUrls[mapType]} 
-        maxZoom={20} 
-        minZoom={8.0}/>
+        <TileLayer
+          key={tileUrls[mapType]}
+          url={tileUrls[mapType]}
+          maxZoom={20}
+          minZoom={8.0} />
         {/* <MapRefresher dependency={tileUrls[mapType]}/> */}
 
         {/* <ClickMyPos onLocation={setMyPos}/> */}
@@ -456,17 +458,22 @@ function App() {
         )}
 
 
-        {myPos && <ZoomMarkers
-          ref={markersRef}
+        {/* 혼잡도 클러스터 */}
+        <CongestionClusterLayer
           markers={markers}
           subwayData={subwayData}
           selectedDay={selectedDay}
           selectedTime={selectedTime}
-          minZoom={14}
+          showFromZoom={8}
           onMarkerClick={handleSubwayPos}
           onMarkerClickOnly={handleSubwayPosOnly}
-        />}
+        />
+
+        {/* 기존 ZoomMarkers는 제거 - 클러스터로 대체 */}
       </MapContainer>
+
+      {/* 혼잡도 범례 (좌하단 고정) */}
+      <CongestionLegend offsetLeft={130} width={320} unit="%" />
 
       {/* 카메라 제어 버튼 그룹 컴포넌트 */}
       <CameraControlBtnGroup

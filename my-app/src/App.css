@@ -41,3 +41,49 @@
 .leaflet-marker-shadow {
   transition: opacity 0.3s ease-in-out;
 }
+
+/* 혼잡도 숫자 툴팁 */
+.leaflet-tooltip.congestion-number-tooltip {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  white-space: nowrap !important;
+}
+
+.leaflet-tooltip.congestion-number-tooltip::before,
+.leaflet-tooltip.congestion-number-tooltip::after {
+  display: none !important;
+  border: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.leaflet-tooltip-center.congestion-number-tooltip {
+  margin-top: 0 !important;
+  margin-left: 0 !important;
+  transform: translate(0, 0) !important;
+}
+
+.leaflet-tooltip-top.congestion-number-tooltip,
+.leaflet-tooltip-bottom.congestion-number-tooltip,
+.leaflet-tooltip-left.congestion-number-tooltip,
+.leaflet-tooltip-right.congestion-number-tooltip {
+  margin: 0 !important;
+}
+
+/* DivIcon 기반 혼잡도 라벨 스타일 */
+.leaflet-pane.congestionLabels .congestion-label-center {
+  pointer-events: none !important;
+  background: transparent !important;
+  border: none !important;
+}
+.congestion-label-center {
+  background: transparent !important;
+  border: none !important;
+}
