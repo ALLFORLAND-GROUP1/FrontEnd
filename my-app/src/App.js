@@ -15,7 +15,7 @@ import SideMenu from "./components/SideMenu/SideMenu";
 import { getRoute } from './modules/getRoute'
 import CameraControlBtnGroup from './components/CameraControlBtnGroup/CameraControlBtnGroup';
 import currentLocationIconUrl from "./assets/image/curLocation_marker.png";
-
+import CongestionLegend from "./components/CongestionLegend/CongestionLegend";
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: markerIcon2x,
@@ -110,7 +110,7 @@ function App() {
   const [infoMessage, setInfoMessage] = useState(null); // 봇 메시지
   const [selectedRouteAPI, setselectedRouteAPI] = useState('gh');
   const [mapType, setMapType] = useState('normal');
-  
+
 
   const myPosRef = useRef(myPos);
   const routeAPIRef = useRef(selectedRouteAPI)
@@ -145,7 +145,7 @@ function App() {
   const handleSubwayPosOnly = async (pos, name, dist, dur, type, intervalNum) => {
     const currentPos = myPosRef.current; // 항상 최신값
     setSavedPos(pos)
-      // console.log(pos, name, dist, dur, type, intervalNum)
+    // console.log(pos, name, dist, dur, type, intervalNum)
     setInfoMessage(`${name}역\n거리: ${dist}km\n시간: ${dur}분\n방향: ${type}\n혼잡도: ${intervalNum}%`)
 
     const res = await fetch("http://localhost:8080/api/info", {
@@ -159,9 +159,9 @@ function App() {
         latitude: pos.lat,
         longitude: pos.lng,
         stationName: name,
-        direction:type,
-        notes:'test',
-        currentLocation:'서울',
+        direction: type,
+        notes: 'test',
+        currentLocation: '서울',
         congestionLevel: intervalNum,
       }),
     });
@@ -261,7 +261,7 @@ function App() {
 
   const handleCurrentLocation = () => {
     const map = mapRef.current;
-    if ("geolocation" in navigator){
+    if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           if (map && myPos) {
@@ -279,7 +279,7 @@ function App() {
         }
       )
     }
-    
+
   };
 
   const handleSelectStation = (station) => {
@@ -287,7 +287,7 @@ function App() {
 
     // 1️⃣ 지도 중심 이동
     // console.log(station.lat, station.lng)
-    
+
 
     // 2️⃣ 팝업 열기 (ZoomMarkers에서 제공하는 openPopupByKey 사용)
     const key = `${station.name}-${station.ho}`;
@@ -328,11 +328,11 @@ function App() {
         style={{ width: "100vw", height: "100vh" }}
         ref={mapRef}
       >
-        <TileLayer 
-        key={tileUrls[mapType]}
-        url={tileUrls[mapType]} 
-        maxZoom={20} 
-        minZoom={8.0}/>
+        <TileLayer
+          key={tileUrls[mapType]}
+          url={tileUrls[mapType]}
+          maxZoom={20}
+          minZoom={8.0} />
 
         {targetStation &&
           <>
@@ -362,7 +362,7 @@ function App() {
 
       </MapContainer>
 
-      
+      <CongestionLegend />
 
       {/* 카메라 제어 버튼 그룹 컴포넌트 */}
       <CameraControlBtnGroup
