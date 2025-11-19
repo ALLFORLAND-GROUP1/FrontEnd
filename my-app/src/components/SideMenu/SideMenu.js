@@ -55,7 +55,7 @@ export default function SideMenu({
     const [selectedTime, setSelectedTime] = useState(getCurrentTime);
     const [selectedDay, setSelectedDay] = useState(getDayType);
     const [selectedRouteAPI, setselectedRouteAPI] = useState('gh');
-    const [mapType, setMapType] = useState('aerial');
+    const [mapType, setMapType] = useState('normal');
 
     const [activeMenu, setActiveMenu] = useState(null); // 'time' | 'search' | 'menu' | null
 

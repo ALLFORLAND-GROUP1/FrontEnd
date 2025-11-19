@@ -18,7 +18,8 @@ function SearchBox({ markers, onSelect }) {
         options={sortedMarkers}
         open={open} // ✅ 수동 제어
         onOpen={() => {
-          if (inputValue.trim() !== "") setOpen(true); // 입력이 있을 때만 열기
+          setOpen(true)
+          // if (inputValue.trim() !== "") setOpen(true); // 입력이 있을 때만 열기
         }}
         onClose={() => setOpen(false)}
         getOptionLabel={(option) => option.name || ""}
