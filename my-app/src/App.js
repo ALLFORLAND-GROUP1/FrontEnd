@@ -30,17 +30,8 @@ const currentLocationIcon = L.icon({
   iconAnchor: [20, 41],
 });
 
-// 기본 마커 아이콘
-const markerIcon_ = L.icon({
-  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
-
 // 초기 중심 위치
 const position = [37.5662201, 126.8593251];
-// 지도 경계
-const bounds = L.latLngBounds([32.5, 123.5], [39.0, 132.0]);
 
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
   const R = 6371; // 지구 반지름 (km)
@@ -68,23 +59,6 @@ function DynamicPolyline({ route }) {
     weight: 10,
     opacity: 1.0,
   });
-
-  // useEffect(() => {
-  //   const handleZoom = () => {
-  //     const zoom = map.getZoom();
-  //     // 줌 비율에 따라 선 두께 및 투명도 즉각 변경
-  //     setPathOptions({
-  //       color: "blue",
-  //       weight: Math.max(2, zoom / 2), // 줌이 커질수록 두꺼워짐
-  //       // opacity: Math.min(1, 0.3 + zoom * 0.05), // 줌에 따른 투명도 변화
-  //     });
-  //   };
-
-  //   map.on("zoom", handleZoom); // 줌 중에도 즉각 반응
-  //   return () => {
-  //     map.off("zoom", handleZoom);
-  //   };
-  // }, [map]);
 
   if (!route || route.length === 0) return null;
 
@@ -114,19 +88,6 @@ function getDayType() {
   if (day === 0) return "일요일"; // 필요하면 추가
 }
 
-function MapRefresher({ dependency }) {
-  const map = useMap();
-
-  useEffect(() => {
-    // 지도 타일·크기 다시 계산
-    setTimeout(() => {
-      map.invalidateSize();
-    }, 200); // 약간 지연 주면 안정적
-  }, [dependency, map]);
-
-  return null;
-}
-
 function App() {
   const getCurrentTime = () => {
     const now = new Date();
@@ -135,29 +96,12 @@ function App() {
     return `${hours}:${minutes}`;
   };
 
-  function DestinationMarker() {
-    useMapEvents({
-      click(e) {
-        const { lat, lng } = e.latlng;
-        setDest([lat, lng]);
-        if (myPos) {
-          handleRoute(
-            { lat: myPos[0], lng: myPos[1] },
-            { lat, lng }
-          );
-        }
-      },
-    });
-    return dest ? <Marker position={dest} /> : null;
-  }
-
   const [markers, setMarkers] = useState([]);
   const [myPos, setMyPos] = useState(null);
   const [subwayData, setSubwayData] = useState([]);
   const [selectedTime, setSelectedTime] = useState(getCurrentTime);
   const [selectedDay, setSelectedDay] = useState(getDayType);
   const [targetStation, setTargetStation] = useState(null);
-  const [dest, setDest] = useState(null);   // 목적지
 
   const [route, setRoute] = useState([]); // 경로 좌표 배열
   const [info, setInfo] = useState(null); // 거리/시간 정보
@@ -166,6 +110,7 @@ function App() {
   const [infoMessage, setInfoMessage] = useState(null); // 봇 메시지
   const [selectedRouteAPI, setselectedRouteAPI] = useState('gh');
   const [mapType, setMapType] = useState('normal');
+  
 
   const myPosRef = useRef(myPos);
   const routeAPIRef = useRef(selectedRouteAPI)
@@ -193,27 +138,14 @@ function App() {
     if (result) {
       setRoute(result.coords);
       setInfo(result.info);
-      // console.log(result.info.distance, 'km,', result.info.duration, '분')
-      // const res = await fetch(
-      //   `http://localhost:5000/info?distance=${result.info.distance}&time=${result.info.duration}&lnglat=${pos.lng},${pos.lat}&name=${name}`
-      // );
-      // const data = await res.json();
-      // setBotMessage(data.reply)
       return result
     }
   }
 
   const handleSubwayPosOnly = async (pos, name, dist, dur, type, intervalNum) => {
     const currentPos = myPosRef.current; // 항상 최신값
-    // const result = await getRoute({lat:currentPos[0], lng:currentPos[1]}, pos, routeAPIRef.current)
     setSavedPos(pos)
-    // if (result) {
-      // setRoute(result.coords);
-      // setInfo(result.info);
-      // console.log(result.info.distance, 'km,', result.info.duration, '분')
-
-      console.log(pos, name, dist, dur, type, intervalNum)
-
+      // console.log(pos, name, dist, dur, type, intervalNum)
     setInfoMessage(`${name}역\n거리: ${dist}km\n시간: ${dur}분\n방향: ${type}\n혼잡도: ${intervalNum}%`)
 
     const res = await fetch("http://localhost:8080/api/info", {
@@ -236,29 +168,10 @@ function App() {
     const data = await res.json();
     // console.log(data)
     setBotMessage(data.data.rawAnswer)
-    
   }
 
-  const handleRoute = async (start, end) => {
-    console.log(routeAPIRef.current)
-    const result = await getRoute(start, end, routeAPIRef.current);
-    setSavedPos(end)
-    if (result) {
-      setRoute(result.coords);
-      setInfo(result.info);
-      console.log(result.info.distance, 'km,', result.info.duration, '분')
-      const res = await fetch(
-        `http://localhost:5000/info?distance=${result.info.distance}&time=${result.info.duration}&lnglat=${end.lng},${end.lat}`
-      );
-      const data = await res.json();
-      setBotMessage(data.reply)
-    }
-  };
-
   useEffect(() => {
-
     document.body.style.overflow = "hidden"; // 스크롤 비활성화
-
   }, [])
 
   useEffect(() => {
@@ -357,12 +270,6 @@ function App() {
               const latlng = [latitude, longitude]
               setMyPos(latlng)
               map.flyTo(myPos, 15.5, { duration: 1.5 });
-              // if (savedPos) {
-              //   handleRoute(
-              //     { lat: latlng[0], lng: latlng[1] },
-              //     savedPos
-              //   )
-              // }
             } catch (error) {
               console.error("위치 초기화 에러:", error);
             }
@@ -374,15 +281,6 @@ function App() {
     }
     
   };
-
-  function ClickMyPos({ onLocation }) {
-    useMapEvents({
-      click(e) {
-        onLocation([e.latlng.lat, e.latlng.lng])
-      },
-    });
-    return null;
-  }
 
   const handleSelectStation = (station) => {
     // setTargetStation(station)
@@ -414,8 +312,6 @@ function App() {
         onChangeInfo={handleInfo}
       />
 
-
-
       <ChatWidget botMessage={botMessage} infoMessage={infoMessage} />
 
       {/* 지도 */}
@@ -437,9 +333,7 @@ function App() {
         url={tileUrls[mapType]} 
         maxZoom={20} 
         minZoom={8.0}/>
-        {/* <MapRefresher dependency={tileUrls[mapType]}/> */}
 
-        {/* <ClickMyPos onLocation={setMyPos}/> */}
         {targetStation &&
           <>
             <FlyToLocation position={targetStation} />
@@ -447,8 +341,7 @@ function App() {
         {myPos && <FlyToLocation position={myPos} />}
 
         {myPos && <Marker position={myPos} icon={currentLocationIcon} />}
-        {/* 지도 마커 찍기 보류 */}
-        {/* <DestinationMarker /> */}
+
         {route.length > 0 && (
           <>
             <DynamicPolyline route={route} />
@@ -466,7 +359,10 @@ function App() {
           onMarkerClick={handleSubwayPos}
           onMarkerClickOnly={handleSubwayPosOnly}
         />}
+
       </MapContainer>
+
+      
 
       {/* 카메라 제어 버튼 그룹 컴포넌트 */}
       <CameraControlBtnGroup

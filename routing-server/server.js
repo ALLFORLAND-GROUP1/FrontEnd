@@ -45,7 +45,6 @@ app.get("/route", async (req, res) => {
     } else if (apitype === 'gh'){
       routeRes = await fetch(
         `https://graphhopper.com/api/1/route?point=${start}&point=${end}&vehicle=foot&locale=ko&key=${process.env.GH_KEY}&points_encoded=false`
-        // `https://api.openrouteservice.org/v2/directions/${mode}?api_key=${process.env.ORS_KEY}&start=${start}&end=${end}`
       );
     }
     const data = await routeRes.json();
