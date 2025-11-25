@@ -48,18 +48,8 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
 }
 
 function DynamicPolyline({ route }) {
-  const map = useMap();
-  const [pathOptions, setPathOptions] = useState({
-    color: "#9e97ffff",
-    weight: 6,
-    opacity: 1.0
-  });
-
-  const [pathOptions2, setPathOptions2] = useState({
-    color: "#05029eff",
-    weight: 10,
-    opacity: 1.0,
-  });
+  const [pathOptions] = useState({ color: "#9e97ffff", weight: 6, opacity: 1.0 });
+  const [pathOptions2] = useState({ color: "#05029eff", weight: 10, opacity: 1.0 });
 
   if (!route || route.length === 0) return null;
 
@@ -68,7 +58,6 @@ function DynamicPolyline({ route }) {
     <Polyline positions={route} pathOptions={pathOptions} /></>;
 }
 
-// 지도 이동만 담당
 function FlyToLocation({ position }) {
   const map = useMap();
   useEffect(() => {
@@ -116,7 +105,6 @@ function snapTo30Min(input) {
     minutes = now.getMinutes();
   }
 
-  // 30분 단위 스냅 로직
   if (minutes < 15) {
     minutes = 0;
   } else if (minutes < 45) {
@@ -126,7 +114,6 @@ function snapTo30Min(input) {
     hours += 1;
   }
 
-  // 24시 넘어가면 0시로 보정 (옵션)
   if (hours >= 24) hours = 0;
 
   const formattedHours = String(hours).padStart(2, "0");
@@ -135,6 +122,7 @@ function snapTo30Min(input) {
 }
 
 function App() {
+  // UI에는 현재 진짜 시간을 보여주기 위해 스냅하지 않음
   const getCurrentTime = () => {
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, "0");
@@ -145,8 +133,11 @@ function App() {
   const [markers, setMarkers] = useState([]);
   const [myPos, setMyPos] = useState(null);
   const [subwayData, setSubwayData] = useState([]);
+
+  // 초기값: 진짜 현재 시간 (예: 10:58)
   const [selectedTime, setSelectedTime] = useState(getCurrentTime);
   const [selectedDay, setSelectedDay] = useState(getDayType);
+
   const [targetStation, setTargetStation] = useState(null);
 
   const [route, setRoute] = useState([]); // 경로 좌표 배열
@@ -191,17 +182,14 @@ function App() {
   useEffect(() => {
     if (!selectedDay || !selectedTime) return;
 
-    const minPart = selectedTime.split(':')[1];
-    if (minPart !== "00" && minPart !== "30") {
-      console.warn(`[App.js] 유효하지 않은 시간 포맷 감지: ${selectedTime}, 30분 단위로 재조정합니다.`);
-      setSelectedTime(snapTo30Min(selectedTime)); // 상태 강제 업데이트하여 재렌더링 유도
-      return;
-    }
+    // 화면에는 selectedTime(10:58)을 유지하고,
+    // 서버 요청용 URL 만들 때만 snapTo30Min을 써서 11:00으로 변환함.
+    const apiTime = snapTo30Min(selectedTime);
+    const url = `http://localhost:8081/api/data/congestion/time?dayType=${selectedDay}&slotTime=${apiTime}`;
 
-    const url = `http://localhost:8081/api/data/congestion/time?dayType=${selectedDay}&slotTime=${selectedTime}`;
+    console.log(`[API 요청] 화면시간: ${selectedTime} -> 요청시간: ${apiTime}`);
 
     loadCSV(url).then((data) => {
-      console.log(`[${selectedDay} ${selectedTime}] Data Loaded:`, data.length);
       setSubwayData(data);
     });
   }, [selectedDay, selectedTime]);
@@ -220,7 +208,7 @@ function App() {
   }
 
   const handleSubwayPosOnly = async (pos, name, dist, dur, type, intervalNum) => {
-    const currentPos = myPosRef.current; // 항상 최신값
+    //const currentPos = myPosRef.current; // 항상 최신값
     setSavedPos(pos)
     // console.log(pos, name, dist, dur, type, intervalNum)
     setInfoMessage(`${name}역\n거리: ${dist}km\n시간: ${dur}분\n방향: ${type}\n혼잡도: ${intervalNum}%`)
@@ -333,12 +321,9 @@ function App() {
     markersRef.current?.flyToAndOpen(key, station.lat, station.lng);
   };
 
-  // Sidebar에서 시간이 변경될 때도 30분 단위로 강제 변환
+  // Sidebar에서 변경된 시간을 그대로 상태에 반영 (스냅 X)
   const handleInfo = (time_, day_, routeapi_, maptype_) => {
-    // Sidebar가 "10:58"을 보내도 여기서 "11:00"으로 바꿔서 저장
-    const snappedTime = snapTo30Min(time_);
-
-    setSelectedTime(snappedTime);
+    setSelectedTime(time_); // "10:58" 그대로 저장
     setSelectedDay(day_);
     setselectedRouteAPI(routeapi_);
     setMapType(maptype_);
@@ -371,6 +356,7 @@ function App() {
         {myPos && <Marker position={myPos} icon={currentLocationIcon} />}
         {route.length > 0 && <DynamicPolyline route={route} />}
 
+        {/* ZoomMarkers에는 진짜 시간(selectedTime)을 넘겨서 팝업에 표시 */}
         {myPos && <ZoomMarkers
           ref={markersRef}
           markers={markers}
