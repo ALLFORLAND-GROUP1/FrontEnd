@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap, Circle, Polyline } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMap, Polyline } from "react-leaflet";
 import ZoomMarkers from "./modules/ZoomMarkers";
 import ChatWidget from "./modules/ChatWidget";
 import L from "leaflet";
@@ -8,7 +8,7 @@ import "./styles/SubwayPopup.css";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
-import { loadCSV } from './modules/utils';
+import { loadCSV } from "./modules/utils";
 import "leaflet-polylinedecorator"
 import { Box } from "@mui/material";
 import SideMenu from "./components/SideMenu/SideMenu";
@@ -16,6 +16,7 @@ import { getRoute } from './modules/getRoute'
 import CameraControlBtnGroup from './components/CameraControlBtnGroup/CameraControlBtnGroup';
 import currentLocationIconUrl from "./assets/image/curLocation_marker.png";
 import CongestionLegend from "./components/CongestionLegend/CongestionLegend";
+
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: markerIcon2x,
@@ -85,7 +86,52 @@ function getDayType() {
 
   if (day === 6) return "토요일";
   if (day >= 1 && day <= 5) return "평일";
-  if (day === 0) return "일요일"; // 필요하면 추가
+  if (day === 0) return "일요일";
+}
+
+// [리펙터링] 어떤 시간이 들어와도 무조건 30분 단위 문자열로 반환하는 함수
+// Ex)입력: Date 객체 또는 "10:58" 같은 문자열
+// Ex)출력: "11:00"
+function snapTo30Min(input) {
+  let hours, minutes;
+
+  if (input instanceof Date) {
+    hours = input.getHours();
+    minutes = input.getMinutes();
+  } else if (typeof input === 'string') {
+    // "10:58" 같은 문자열 파싱
+    const parts = input.split(':');
+    if (parts.length === 2) {
+      hours = parseInt(parts[0], 10);
+      minutes = parseInt(parts[1], 10);
+    } else {
+      // 형식이 이상하면 현재 시간 기준
+      const now = new Date();
+      hours = now.getHours();
+      minutes = now.getMinutes();
+    }
+  } else {
+    const now = new Date();
+    hours = now.getHours();
+    minutes = now.getMinutes();
+  }
+
+  // 30분 단위 스냅 로직
+  if (minutes < 15) {
+    minutes = 0;
+  } else if (minutes < 45) {
+    minutes = 30;
+  } else {
+    minutes = 0;
+    hours += 1;
+  }
+
+  // 24시 넘어가면 0시로 보정 (옵션)
+  if (hours >= 24) hours = 0;
+
+  const formattedHours = String(hours).padStart(2, "0");
+  const formattedMinutes = String(minutes).padStart(2, "0");
+  return `${formattedHours}:${formattedMinutes}`;
 }
 
 function App() {
@@ -111,16 +157,15 @@ function App() {
   const [selectedRouteAPI, setselectedRouteAPI] = useState('gh');
   const [mapType, setMapType] = useState('normal');
 
-
   const myPosRef = useRef(myPos);
   const routeAPIRef = useRef(selectedRouteAPI)
   const markersRef = useRef(null);
+  const mapRef = useRef(null);
 
   const tileUrls = {
     normal: "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
     aerial: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
   };
-  const mapRef = useRef(null); // Add a reference to the map instance
 
   useEffect(() => {
     myPosRef.current = myPos; // myPos 바뀔 때마다 ref 업데이트
@@ -129,6 +174,38 @@ function App() {
   useEffect(() => {
     routeAPIRef.current = selectedRouteAPI
   }, [selectedRouteAPI])
+
+  // 역 위치 로딩
+  useEffect(() => {
+    loadCSV("http://localhost:8081/api/data/stations").then((data) => {
+      const mappedData = data.map(item => ({
+        ...item,
+        name: item.stationName
+      }));
+      setMarkers(mappedData);
+    });
+  }, []);
+
+  // 혼잡도 데이터 로딩
+  // selectedTime은 항상 00 또는 30으로 보장
+  useEffect(() => {
+    if (!selectedDay || !selectedTime) return;
+
+    const minPart = selectedTime.split(':')[1];
+    if (minPart !== "00" && minPart !== "30") {
+      console.warn(`[App.js] 유효하지 않은 시간 포맷 감지: ${selectedTime}, 30분 단위로 재조정합니다.`);
+      setSelectedTime(snapTo30Min(selectedTime)); // 상태 강제 업데이트하여 재렌더링 유도
+      return;
+    }
+
+    const url = `http://localhost:8081/api/data/congestion/time?dayType=${selectedDay}&slotTime=${selectedTime}`;
+
+    loadCSV(url).then((data) => {
+      console.log(`[${selectedDay} ${selectedTime}] Data Loaded:`, data.length);
+      setSubwayData(data);
+    });
+  }, [selectedDay, selectedTime]);
+
 
   const handleSubwayPos = async (pos, name) => {
     const currentPos = myPosRef.current; // 항상 최신값
@@ -147,27 +224,27 @@ function App() {
     setSavedPos(pos)
     // console.log(pos, name, dist, dur, type, intervalNum)
     setInfoMessage(`${name}역\n거리: ${dist}km\n시간: ${dur}분\n방향: ${type}\n혼잡도: ${intervalNum}%`)
-
-    const res = await fetch("http://localhost:8080/api/info", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        distanceMeters: dist,
-        timeMinutes: dur,
-        latitude: pos.lat,
-        longitude: pos.lng,
-        stationName: name,
-        direction: type,
-        notes: 'test',
-        currentLocation: '서울',
-        congestionLevel: intervalNum,
-      }),
-    });
-    const data = await res.json();
-    // console.log(data)
-    setBotMessage(data.data.rawAnswer)
+    try {
+      const res = await fetch("http://localhost:8081/api/info", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          distanceMeters: dist,
+          timeMinutes: dur,
+          latitude: pos.lat,
+          longitude: pos.lng,
+          stationName: name,
+          direction: type,
+          notes: 'test',
+          currentLocation: '서울',
+          congestionLevel: intervalNum,
+        }),
+      });
+      const data = await res.json();
+      setBotMessage(data.data.rawAnswer)
+    } catch (e) {
+      console.error("LLM 요청 실패:", e);
+    }
   }
 
   useEffect(() => {
@@ -175,50 +252,12 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (myPos && markers.length > 0) {
-      const nearby = markers.filter((m) => {
-        const dist = getDistanceFromLatLonInKm(myPos[0], myPos[1], m.lat, m.lng);
-        return dist <= 1; // ✅ 5km 이내
-      });
-
-      console.log("📍 내 위치 기준 2km 이내 지하철역:");
-      nearby.forEach((station) => {
-        const dist = getDistanceFromLatLonInKm(myPos[0], myPos[1], station.lat, station.lng);
-        console.log(`${station.name} (${station.ho}호선) - ${dist.toFixed(2)} km`);
-      });
-    }
-  }, [myPos, markers]);
-
-  useEffect(() => {
-    // locations.csv 불러오기
-    loadCSV("/locations.csv").then((data) => {
-      const parsed = data
-        .map((row) => ({
-          name: row.name,
-          lat: parseFloat(row.lat),
-          lng: parseFloat(row.lng),
-          ho: row.ho,
-        }))
-        .filter((row) => !isNaN(row.lat) && !isNaN(row.lng));
-      setMarkers(parsed);
-    });
-
-    // time.csv 불러오기
-    loadCSV("/time.csv").then((data) => {
-      setSubwayData(data);
-    });
-  }, []);
-
-  useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          const { latitude, longitude } = pos.coords;
-          setMyPos([latitude, longitude]);
+          setMyPos([pos.coords.latitude, pos.coords.longitude]);
         },
-        (err) => {
-          console.error("위치 가져오기 실패:", err);
-        }
+        (err) => { console.error("위치 가져오기 실패:", err); }
       );
     }
   }, []);
@@ -292,29 +331,27 @@ function App() {
     // 2️⃣ 팝업 열기 (ZoomMarkers에서 제공하는 openPopupByKey 사용)
     const key = `${station.name}-${station.ho}`;
     markersRef.current?.flyToAndOpen(key, station.lat, station.lng);
-    // markersRef.current?.openPopupByKey(key);
   };
 
+  // Sidebar에서 시간이 변경될 때도 30분 단위로 강제 변환
   const handleInfo = (time_, day_, routeapi_, maptype_) => {
-    setSelectedTime(time_)
-    setSelectedDay(day_)
-    setselectedRouteAPI(routeapi_)
-    setMapType(maptype_)
-    // console.log("사이드바에서 받은 인포:", a,b,c,d);
+    // Sidebar가 "10:58"을 보내도 여기서 "11:00"으로 바꿔서 저장
+    const snappedTime = snapTo30Min(time_);
+
+    setSelectedTime(snappedTime);
+    setSelectedDay(day_);
+    setselectedRouteAPI(routeapi_);
+    setMapType(maptype_);
   };
 
   return (
     <Box sx={{ position: "relative", height: "100vh", display: "flex" }}>
-      {/* 사이드바 */}
       <SideMenu
         markers={markers}
         handleSelectStation={handleSelectStation}
         onChangeInfo={handleInfo}
       />
-
       <ChatWidget botMessage={botMessage} infoMessage={infoMessage} />
-
-      {/* 지도 */}
       <MapContainer
         center={position}
         zoom={15}
@@ -328,26 +365,11 @@ function App() {
         style={{ width: "100vw", height: "100vh" }}
         ref={mapRef}
       >
-        <TileLayer
-          key={tileUrls[mapType]}
-          url={tileUrls[mapType]}
-          maxZoom={20}
-          minZoom={8.0} />
-
-        {targetStation &&
-          <>
-            <FlyToLocation position={targetStation} />
-          </>}
+        <TileLayer key={tileUrls[mapType]} url={tileUrls[mapType]} maxZoom={20} minZoom={8.0} />
+        {targetStation && <FlyToLocation position={targetStation} />}
         {myPos && <FlyToLocation position={myPos} />}
-
         {myPos && <Marker position={myPos} icon={currentLocationIcon} />}
-
-        {route.length > 0 && (
-          <>
-            <DynamicPolyline route={route} />
-          </>
-        )}
-
+        {route.length > 0 && <DynamicPolyline route={route} />}
 
         {myPos && <ZoomMarkers
           ref={markersRef}
@@ -359,12 +381,8 @@ function App() {
           onMarkerClick={handleSubwayPos}
           onMarkerClickOnly={handleSubwayPosOnly}
         />}
-
       </MapContainer>
-
       <CongestionLegend />
-
-      {/* 카메라 제어 버튼 그룹 컴포넌트 */}
       <CameraControlBtnGroup
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
