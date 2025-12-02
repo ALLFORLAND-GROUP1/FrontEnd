@@ -13,9 +13,11 @@ import "leaflet-polylinedecorator"
 import { Box } from "@mui/material";
 import SideMenu from "./components/SideMenu/SideMenu";
 import { getRoute } from './modules/getRoute'
+import { getWeather } from './modules/getWeather'
 import CameraControlBtnGroup from './components/CameraControlBtnGroup/CameraControlBtnGroup';
 import currentLocationIconUrl from "./assets/image/curLocation_marker.png";
 import CongestionLegend from "./components/CongestionLegend/CongestionLegend";
+import WeatherWidget from "./components/WeatherWidget/WeatherWidget";
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -147,6 +149,8 @@ function App() {
   const [infoMessage, setInfoMessage] = useState(null); // 봇 메시지
   const [selectedRouteAPI, setselectedRouteAPI] = useState('gh');
   const [mapType, setMapType] = useState('normal');
+  const [selectedDate, setSelectedDate] = useState(null); // 선택된 날짜
+  const [weatherData, setWeatherData] = useState(null); // 날씨 데이터
 
   const myPosRef = useRef(myPos);
   const routeAPIRef = useRef(selectedRouteAPI)
@@ -168,7 +172,7 @@ function App() {
 
   // 역 위치 로딩
   useEffect(() => {
-    loadCSV("http://localhost:8080/api/data/stations").then((data) => {
+    loadCSV("http://localhost:8081/api/data/stations").then((data) => {
       const mappedData = data.map(item => ({
         ...item,
         name: item.stationName
@@ -184,7 +188,7 @@ function App() {
     // 화면에는 selectedTime(10:58)을 유지하고,
     // 서버 요청용 URL 만들 때만 snapTo30Min을 써서 11:00으로 변환함.
     const apiTime = snapTo30Min(selectedTime);
-    const url = `http://localhost:8080/api/data/congestion/time?dayType=${selectedDay}&slotTime=${apiTime}`;
+    const url = `http://localhost:8081/api/data/congestion/time?dayType=${selectedDay}&slotTime=${apiTime}`;
 
     console.log(`[API 요청] 화면시간: ${selectedTime} -> 요청시간: ${apiTime}`);
 
@@ -192,6 +196,24 @@ function App() {
       setSubwayData(data);
     });
   }, [selectedDay, selectedTime]);
+
+  // 날씨 데이터 로딩
+  useEffect(() => {
+    if (!selectedDate || !selectedTime || !myPos) return;
+
+    const fetchWeatherData = async () => {
+      const result = await getWeather(selectedDate, selectedTime, myPos[0], myPos[1]);
+      if (result) {
+        setWeatherData(result);
+        console.log('[날씨 조회 성공]', result);
+      } else {
+        console.log('[날씨 조회 실패]');
+        setWeatherData(null);
+      }
+    };
+
+    fetchWeatherData();
+  }, [selectedDate, selectedTime, myPos]);
 
 
   const handleSubwayPos = async (pos, name) => {
@@ -212,7 +234,17 @@ function App() {
     // console.log(pos, name, dist, dur, type, intervalNum)
     setInfoMessage(`${name}역\n거리: ${dist}km\n시간: ${dur}분\n방향: ${type}\n혼잡도: ${intervalNum}%`)
     try {
-      const res = await fetch("http://localhost:8080/api/info", {
+      // 날짜 포맷팅 (dayjs 객체를 YYYY-MM-DD 문자열로 변환)
+      const formattedDate = selectedDate ?
+        (typeof selectedDate === 'string' ? selectedDate : selectedDate.format('YYYY-MM-DD'))
+        : new Date().toISOString().split('T')[0];
+
+      // 시간 포맷팅 (HH:mm을 HH:mm:ss로 변환)
+      const formattedTime = selectedTime ? `${selectedTime}:00` : new Date().toTimeString().split(' ')[0];
+
+      console.log('[LLM API 요청 데이터]', { date: formattedDate, time: formattedTime });
+
+      const res = await fetch("http://localhost:8081/api/info", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -225,12 +257,31 @@ function App() {
           notes: 'test',
           currentLocation: '서울',
           congestionLevel: intervalNum,
+          // TODO: 백엔드 DTO에 date, time 필드 추가 후 아래 주석 해제
+          date: formattedDate,      // 날짜 (YYYY-MM-DD) - 백엔드에서 평일/토요일/일요일로 자동 변환
+          time: formattedTime,      // 시간 (HH:mm:ss)
         }),
       });
+
+      if (!res.ok) {
+        console.error(`LLM API 응답 에러: ${res.status}`);
+        const errorText = await res.text();
+        console.error('에러 상세:', errorText);
+        //setBotMessage("죄송합니다. 현재 AI 응답을 생성할 수 없습니다. 잠시 후 다시 시도해주세요.");
+        return;
+      }
+
       const data = await res.json();
-      setBotMessage(data.data.rawAnswer)
+
+      if (data && data.data && data.data.rawAnswer) {
+        setBotMessage(data.data.rawAnswer);
+      } else {
+        console.error("LLM 응답 형식 오류:", data);
+        //setBotMessage("죄송합니다. 현재 AI 응답을 생성할 수 없습니다. 잠시 후 다시 시도해주세요.");
+      }
     } catch (e) {
       console.error("LLM 요청 실패:", e);
+      //setBotMessage("죄송합니다. 현재 AI 응답을 생성할 수 없습니다. 잠시 후 다시 시도해주세요.");
     }
   }
 
@@ -321,11 +372,12 @@ function App() {
   };
 
   // Sidebar에서 변경된 시간을 그대로 상태에 반영 (스냅 X)
-  const handleInfo = (time_, day_, routeapi_, maptype_) => {
+  const handleInfo = (time_, day_, routeapi_, maptype_, date_) => {
     setSelectedTime(time_); // "10:58" 그대로 저장
     setSelectedDay(day_);
     setselectedRouteAPI(routeapi_);
     setMapType(maptype_);
+    setSelectedDate(date_); // 날짜 정보 저장
   };
 
   return (
@@ -368,6 +420,7 @@ function App() {
         />}
       </MapContainer>
       <CongestionLegend />
+      <WeatherWidget weatherData={weatherData} />
       <CameraControlBtnGroup
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
