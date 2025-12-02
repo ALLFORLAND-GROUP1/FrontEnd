@@ -29,12 +29,18 @@ import {
     MenuIcon as StyledMenuIcon,
     MenuText,
 } from "./SideMenuStyle";
+import dayjs from "dayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import 'dayjs/locale/ko'
 
 export default function SideMenu({
     markers,
     handleSelectStation,
     onChangeInfo
 }) {
+    
 
     const getCurrentTime = () => {
         const now = new Date();
@@ -50,6 +56,12 @@ export default function SideMenu({
         if (day === 6) return "토요일";
         if (day >= 1 && day <= 5) return "평일";
         if (day === 0) return "일요일";
+    }
+
+    function getDayTypeEn(date_) {
+        if (date_ == 'Sunday') return "일요일"
+        if (date_ == 'Saturday') return "토요일"
+        return "평일"
     }
 
     const [selectedTime, setSelectedTime] = useState(getCurrentTime);
@@ -94,6 +106,9 @@ export default function SideMenu({
         },
     ];
 
+    const today = dayjs();
+    const oneWeekLater = today.add(6, "day");
+    const [selectedDate, setSelectedDate] = useState(today);
     return (
         <>
             {/* 메인 사이드바 */}
@@ -371,9 +386,36 @@ export default function SideMenu({
                     <Card sx={{ mb: 2 }}>
                         <CardContent>
                             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                                요일 선택
+                                날짜 선택
                             </Typography>
-                            <FormControl fullWidth>
+                            
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                <DatePicker
+                                label="날짜 선택"
+                                value={selectedDate}
+                                onChange={(newValue) => {
+                                    setSelectedDate(newValue)
+                                    console.log(newValue)
+                                    setSelectedDay(getDayTypeEn(newValue.format("dddd")))
+                                }}
+                                minDate={today}
+                                maxDate={oneWeekLater}
+                                format="YYYY-MM-DD"
+                                slotProps={{
+                                    textField: {
+                                    fullWidth: true
+                                    }
+                                }}
+                                />
+
+                                <div style={{ fontSize: 15 }}>
+                                {/* 선택한 날짜: {selectedDate.format("YYYY-MM-DD")}{" "}
+                                ({selectedDate.format("dddd")}) */}
+                                </div>
+                            </div>
+                            </LocalizationProvider>
+                            {/* <FormControl fullWidth>
                                 <InputLabel>요일 선택</InputLabel>
                                 <Select
                                     value={selectedDay}
@@ -385,7 +427,7 @@ export default function SideMenu({
                                     <MenuItem value="토요일">토요일</MenuItem>
                                     <MenuItem value="일요일">일요일</MenuItem>
                                 </Select>
-                            </FormControl>
+                            </FormControl> */}
                         </CardContent>
                     </Card>
 
@@ -407,7 +449,10 @@ export default function SideMenu({
                                 />
                                 <Tooltip title="현재 시간으로 설정" arrow>
                                     <IconButton
-                                        onClick={getcurt}
+                                        onClick={e=>{
+                                            getcurt()
+                                            setSelectedDate(today)
+                                        }}
                                         color="primary"
                                         sx={{
                                             width: 48,

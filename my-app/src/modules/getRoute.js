@@ -3,13 +3,13 @@ export async function getRoute(start, end, apitype) {
   var res = null
   if (apitype == 'ors') {
     res = await fetch(
-      `http://localhost:8081/api/route?start=${start.lng},${start.lat}&end=${end.lng},${end.lat}&mode=foot-walking&apitype=${apitype}`
+      `http://localhost:8080/api/route?start=${start.lng},${start.lat}&end=${end.lng},${end.lat}&mode=foot-walking&apitype=${apitype}`
       // `http://localhost:5000/route?start=${start.lng},${start.lat}&end=${end.lng},${end.lat}&mode=foot-walking&apitype=${apitype}`
     );
   }
   else if (apitype == 'gh') {
     res = await fetch(
-      `http://localhost:8081/api/route?start=${start.lat},${start.lng}&end=${end.lat},${end.lng}&mode=foot-walking&apitype=${apitype}`
+      `http://localhost:8080/api/route?start=${start.lat},${start.lng}&end=${end.lat},${end.lng}&mode=foot-walking&apitype=${apitype}`
       // `http://localhost:5000/route?start=${start.lat},${start.lng}&end=${end.lat},${end.lng}&mode=foot-walking&apitype=${apitype}`
     );
   }

@@ -168,7 +168,7 @@ function App() {
 
   // 역 위치 로딩
   useEffect(() => {
-    loadCSV("http://localhost:8081/api/data/stations").then((data) => {
+    loadCSV("http://localhost:8080/api/data/stations").then((data) => {
       const mappedData = data.map(item => ({
         ...item,
         name: item.stationName
@@ -181,11 +181,10 @@ function App() {
   // selectedTime은 항상 00 또는 30으로 보장
   useEffect(() => {
     if (!selectedDay || !selectedTime) return;
-
     // 화면에는 selectedTime(10:58)을 유지하고,
     // 서버 요청용 URL 만들 때만 snapTo30Min을 써서 11:00으로 변환함.
     const apiTime = snapTo30Min(selectedTime);
-    const url = `http://localhost:8081/api/data/congestion/time?dayType=${selectedDay}&slotTime=${apiTime}`;
+    const url = `http://localhost:8080/api/data/congestion/time?dayType=${selectedDay}&slotTime=${apiTime}`;
 
     console.log(`[API 요청] 화면시간: ${selectedTime} -> 요청시간: ${apiTime}`);
 
@@ -213,7 +212,7 @@ function App() {
     // console.log(pos, name, dist, dur, type, intervalNum)
     setInfoMessage(`${name}역\n거리: ${dist}km\n시간: ${dur}분\n방향: ${type}\n혼잡도: ${intervalNum}%`)
     try {
-      const res = await fetch("http://localhost:8081/api/info", {
+      const res = await fetch("http://localhost:8080/api/info", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
