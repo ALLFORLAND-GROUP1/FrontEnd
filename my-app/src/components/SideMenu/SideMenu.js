@@ -40,7 +40,7 @@ export default function SideMenu({
     handleSelectStation,
     onChangeInfo
 }) {
-    
+
 
     const getCurrentTime = () => {
         const now = new Date();
@@ -64,16 +64,16 @@ export default function SideMenu({
         return "평일"
     }
 
+    const today = dayjs();
+    const oneWeekLater = today.add(6, "day");
+
     const [selectedTime, setSelectedTime] = useState(getCurrentTime);
     const [selectedDay, setSelectedDay] = useState(getDayType);
     const [selectedRouteAPI, setselectedRouteAPI] = useState('gh');
     const [mapType, setMapType] = useState('normal');
+    const [selectedDate, setSelectedDate] = useState(today);
 
     const [activeMenu, setActiveMenu] = useState(null); // 'time' | 'search' | 'menu' | null
-
-    const today = dayjs();
-    const oneWeekLater = today.add(6, "day");
-    const [selectedDate, setSelectedDate] = useState(today);
 
     const toggleMenu = (menu) => {
         setActiveMenu((prev) => (prev === menu ? null : menu));
@@ -109,8 +109,6 @@ export default function SideMenu({
             description: '역 이름으로 검색',
         },
     ];
-
-    
     return (
         <>
             {/* 메인 사이드바 */}
@@ -390,32 +388,32 @@ export default function SideMenu({
                             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                                 날짜 선택
                             </Typography>
-                            
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                <DatePicker
-                                label="날짜 선택"
-                                value={selectedDate}
-                                onChange={(newValue) => {
-                                    setSelectedDate(newValue)
-                                    console.log(newValue)
-                                    setSelectedDay(getDayTypeEn(newValue.format("dddd")))
-                                }}
-                                minDate={today}
-                                maxDate={oneWeekLater}
-                                format="YYYY-MM-DD"
-                                slotProps={{
-                                    textField: {
-                                    fullWidth: true
-                                    }
-                                }}
-                                />
 
-                                <div style={{ fontSize: 15 }}>
-                                {/* 선택한 날짜: {selectedDate.format("YYYY-MM-DD")}{" "}
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                    <DatePicker
+                                        label="날짜 선택"
+                                        value={selectedDate}
+                                        onChange={(newValue) => {
+                                            setSelectedDate(newValue)
+                                            console.log(newValue)
+                                            setSelectedDay(getDayTypeEn(newValue.format("dddd")))
+                                        }}
+                                        minDate={today}
+                                        maxDate={oneWeekLater}
+                                        format="YYYY-MM-DD"
+                                        slotProps={{
+                                            textField: {
+                                                fullWidth: true
+                                            }
+                                        }}
+                                    />
+
+                                    <div style={{ fontSize: 15 }}>
+                                        {/* 선택한 날짜: {selectedDate.format("YYYY-MM-DD")}{" "}
                                 ({selectedDate.format("dddd")}) */}
+                                    </div>
                                 </div>
-                            </div>
                             </LocalizationProvider>
                             {/* <FormControl fullWidth>
                                 <InputLabel>요일 선택</InputLabel>
@@ -451,7 +449,7 @@ export default function SideMenu({
                                 />
                                 <Tooltip title="현재 시간으로 설정" arrow>
                                     <IconButton
-                                        onClick={e=>{
+                                        onClick={e => {
                                             getcurt()
                                             setSelectedDate(today)
                                         }}
