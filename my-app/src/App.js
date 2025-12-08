@@ -19,8 +19,9 @@ import currentLocationIconUrl from "./assets/image/curLocation_marker.png";
 import CongestionLegend from "./components/CongestionLegend/CongestionLegend";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-dayjs.extend(utc)
 import WeatherWidget from "./components/WeatherWidget/WeatherWidget";
+dayjs.extend(utc)
+
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
