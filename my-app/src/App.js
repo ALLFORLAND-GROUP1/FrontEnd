@@ -40,19 +40,6 @@ const currentLocationIcon = L.icon({
 // 초기 중심 위치
 const position = [37.5662201, 126.8593251];
 
-function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-  const R = 6371; // 지구 반지름 (km)
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) *
-    Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c; // 거리 (km)
-}
-
 function DynamicPolyline({ route }) {
   const [pathOptions] = useState({ color: "#9e97ffff", weight: 6, opacity: 1.0 });
   const [pathOptions2] = useState({ color: "#05029eff", weight: 10, opacity: 1.0 });
@@ -62,16 +49,6 @@ function DynamicPolyline({ route }) {
   return <>
     <Polyline positions={route} pathOptions={pathOptions2} />
     <Polyline positions={route} pathOptions={pathOptions} /></>;
-}
-
-function FlyToLocation({ position }) {
-  const map = useMap();
-  useEffect(() => {
-    if (position) {
-      map.flyTo(position, 15, { duration: 1.2 });
-    }
-  }, [map, position]);
-  return null;
 }
 
 function getDayType() {
@@ -148,16 +125,14 @@ function App() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedDate2, setSelectedDate2] = useState(today_);
 
-  const [targetStation, setTargetStation] = useState(null);
-
   const [route, setRoute] = useState([]); // 경로 좌표 배열
-  const [info, setInfo] = useState(null); // 거리/시간 정보
-  const [savedPos, setSavedPos] = useState(null);
   const [botMessage, setBotMessage] = useState(null); // 봇 메시지
   const [infoMessage, setInfoMessage] = useState(null); // 봇 메시지
   const [selectedRouteAPI, setselectedRouteAPI] = useState('gh');
   const [mapType, setMapType] = useState('normal');
   const [weatherData, setWeatherData] = useState(null); // 날씨 데이터
+  const [weatherOpacity, setWeatherOpacity] = useState(0.35); // WMS 레이어 투명도
+  const [weatherVisible, setWeatherVisible] = useState(true); // WMS 레이어 표시 여부
 
   const myPosRef = useRef(myPos);
   const routeAPIRef = useRef(selectedRouteAPI)
@@ -227,18 +202,13 @@ function App() {
     const currentPos = myPosRef.current; // 항상 최신값
 
     const result = await getRoute({ lat: currentPos[0], lng: currentPos[1] }, pos, routeAPIRef.current)
-    setSavedPos(pos)
     if (result) {
       setRoute(result.coords);
-      setInfo(result.info);
       return result
     }
   }
 
   const handleSubwayPosOnly = async (pos, name, dist, dur, type, intervalNum) => {
-    //const currentPos = myPosRef.current; // 항상 최신값
-    setSavedPos(pos)
-    // console.log(pos, name, dist, dur, type, intervalNum)
     setInfoMessage(`${name}역\n거리: ${dist}km\n시간: ${dur}분\n방향: ${type}\n혼잡도: ${intervalNum}%`)
     try {
       // 날짜 포맷팅 (dayjs 객체를 YYYY-MM-DD 문자열로 변환)
@@ -369,13 +339,7 @@ function App() {
   };
 
   const handleSelectStation = (station) => {
-    // setTargetStation(station)
-
-    // 1️⃣ 지도 중심 이동
-    // console.log(station.lat, station.lng)
-
-
-    // 2️⃣ 팝업 열기 (ZoomMarkers에서 제공하는 openPopupByKey 사용)
+    // 팝업 열기 (ZoomMarkers에서 제공하는 openPopupByKey 사용)
     const key = `${station.name}-${station.ho}`;
     markersRef.current?.flyToAndOpen(key, station.lat, station.lng);
   };
@@ -403,6 +367,10 @@ function App() {
         markers={markers}
         handleSelectStation={handleSelectStation}
         onChangeInfo={handleInfo}
+        weatherOpacity={weatherOpacity}
+        onWeatherOpacityChange={setWeatherOpacity}
+        weatherVisible={weatherVisible}
+        onWeatherVisibleChange={setWeatherVisible}
       />
       <ChatWidget botMessage={botMessage} infoMessage={infoMessage} />
       <MapContainer
@@ -419,20 +387,19 @@ function App() {
         ref={mapRef}
       >
         <TileLayer key={tileUrls[mapType]} url={tileUrls[mapType]} maxZoom={20} minZoom={8.0} />
-        <WMSTileLayer
-          url="http://43.203.150.74:8080/geoserver/weather/wms"
-          layers="weather:rasters"
-          format="image/png"
-          transparent={true}
-          opacity={0.2}
-          params={{
+        {weatherVisible && (
+          <WMSTileLayer
+            url="http://43.203.150.74:8080/geoserver/weather/wms"
+            layers="weather:rasters"
+            format="image/png"
+            transparent={true}
+            opacity={weatherOpacity}
+            params={{
               time: selectedDate2
-              // time: "2025-12-05T12:00:00.000Z"
-          }}
-          key={wmsKey}
-        />
-        {targetStation && <FlyToLocation position={targetStation} />}
-        {myPos && <FlyToLocation position={myPos} />}
+            }}
+            key={`${wmsKey}-${weatherOpacity}`}
+          />
+        )}
         {myPos && <Marker position={myPos} icon={currentLocationIcon} />}
         {route.length > 0 && <DynamicPolyline route={route} />}
 

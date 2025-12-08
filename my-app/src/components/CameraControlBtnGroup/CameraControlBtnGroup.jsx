@@ -1,23 +1,22 @@
 import React from 'react';
-import { Box, IconButton, Tooltip, Paper } from '@mui/material';
+import { IconButton, Tooltip, Paper } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import ZoomInIcon from '@mui/icons-material/ZoomIn';
-import ZoomOutIcon from '@mui/icons-material/ZoomOut';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 import MyLocationIcon from '@mui/icons-material/MyLocation';
 
 // 확대/축소 컨트롤 컨테이너
 const ZoomControlContainer = styled(Paper)(() => ({
   position: 'fixed',
-  top: '20px',
-  right: '20px',
-  zIndex: 1100,
+  bottom: '24px',
+  left: '24px',
+  zIndex: 1000,
   display: 'flex',
   flexDirection: 'column',
-  backgroundColor: 'rgba(255, 255, 255, 0.9)',
-  backdropFilter: 'blur(10px)',
-  borderRadius: '8px',
-  border: '1px solid #e0e0e0',
+  backgroundColor: 'rgba(255,255,255,0.95)',
+  borderRadius: '12px',
   overflow: 'hidden',
+  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
 }));
 
 // 확대/축소 버튼 스타일
@@ -26,31 +25,31 @@ const ZoomButton = styled(IconButton)(() => ({
   borderRadius: 0,
   color: '#000',
   '&:hover': {
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    backgroundColor: 'rgba(0, 0, 0, 0.04)',
   },
   '&:not(:last-child)': {
-    borderBottom: '1px solid #e0e0e0',
+    borderBottom: '1px solid rgba(0,0,0,0.08)',
   },
 }));
 
 const CameraControlBtnGroup = ({ onZoomIn, onZoomOut, onCurrentLocation }) => {
   return (
-    <ZoomControlContainer elevation={3}>
-      <Tooltip title="확대" placement="left">
+    <ZoomControlContainer elevation={8}>
+      <Tooltip title="확대" placement="right">
         <ZoomButton onClick={onZoomIn}>
-          <ZoomInIcon />
+          <AddIcon sx={{ fontSize: 24 }} />
         </ZoomButton>
       </Tooltip>
 
-      <Tooltip title="축소" placement="left">
+      <Tooltip title="축소" placement="right">
         <ZoomButton onClick={onZoomOut}>
-          <ZoomOutIcon />
+          <RemoveIcon sx={{ fontSize: 24 }} />
         </ZoomButton>
       </Tooltip>
 
-      <Tooltip title="현재 위치로" placement="left">
+      <Tooltip title="내 위치" placement="right">
         <ZoomButton onClick={onCurrentLocation}>
-          <MyLocationIcon />
+          <MyLocationIcon sx={{ fontSize: 24 }} />
         </ZoomButton>
       </Tooltip>
     </ZoomControlContainer>

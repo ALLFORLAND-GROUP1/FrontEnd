@@ -1,30 +1,28 @@
-import { Box, Card, CardContent, Typography, Stack, IconButton, Grid } from "@mui/material";
+import { Box, Paper, Typography, IconButton, Chip } from "@mui/material";
 import WbSunnyIcon from "@mui/icons-material/WbSunny";
 import CloudIcon from "@mui/icons-material/Cloud";
 import OpacityIcon from "@mui/icons-material/Opacity";
 import AirIcon from "@mui/icons-material/Air";
 import ThermostatIcon from "@mui/icons-material/Thermostat";
+import CloseIcon from "@mui/icons-material/Close";
 import { useState } from "react";
 
 // 날씨 상태에 따른 아이콘 매핑
 const getWeatherIcon = (weather) => {
-    if (!weather) return <WbSunnyIcon />;
+    if (!weather) return <WbSunnyIcon sx={{ fontSize: 40 }} />;
 
     const condition = weather.toLowerCase();
     if (condition.includes('rain') || condition.includes('비')) {
-        return <OpacityIcon />;
+        return <OpacityIcon sx={{ fontSize: 40, color: '#3b82f6' }} />;
     } else if (condition.includes('cloud') || condition.includes('구름')) {
-        return <CloudIcon />;
+        return <CloudIcon sx={{ fontSize: 40, color: '#64748b' }} />;
     } else {
-        return <WbSunnyIcon />;
+        return <WbSunnyIcon sx={{ fontSize: 40, color: '#f59e0b' }} />;
     }
 };
 
 export default function WeatherWidget({ weatherData }) {
-    const [isOpen, setIsOpen] = useState(true);
-
-    // 디버깅용 로그
-    //console.log('[WeatherWidget] 받은 데이터:', weatherData);
+    const [isOpen, setIsOpen] = useState(false);
 
     if (!weatherData) {
         return null;
@@ -36,8 +34,8 @@ export default function WeatherWidget({ weatherData }) {
             <Box
                 sx={{
                     position: "fixed",
-                    top: 20,
-                    right: 500,
+                    top: 100,
+                    right: 24,
                     zIndex: 1000,
                 }}
             >
@@ -47,7 +45,7 @@ export default function WeatherWidget({ weatherData }) {
                         width: 56,
                         height: 56,
                         backgroundColor: "rgba(255, 255, 255, 0.95)",
-                        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
+                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
                         borderRadius: "12px",
                         "&:hover": {
                             backgroundColor: "rgba(255, 255, 255, 1)",
@@ -64,91 +62,202 @@ export default function WeatherWidget({ weatherData }) {
         <Box
             sx={{
                 position: "fixed",
-                top: 20,
-                right: 500,
+                top: 100,
+                right: 24,
                 zIndex: 1000,
             }}
         >
-            <Card
+            <Paper
+                elevation={3}
                 sx={{
-                    minWidth: 280,
-                    backdropFilter: "blur(12px)",
+                    minWidth: 300,
                     backgroundColor: "rgba(255, 255, 255, 0.95)",
-                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
+                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
                     borderRadius: "12px",
+                    overflow: 'hidden'
                 }}
             >
-                <CardContent sx={{ pb: 2 }}>
-                    <Box display="flex" alignItems="center" justifyContent="space-between" mb={1.5}>
-                        <Box display="flex" alignItems="center" gap={1}>
+                {/* 헤더 */}
+                <Box
+                    sx={{
+                        background: "linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)",
+                        px: 3,
+                        py: 2,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between'
+                    }}
+                >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Box
+                            sx={{
+                                width: 48,
+                                height: 48,
+                                borderRadius: '12px',
+                                background: 'rgba(255,255,255,0.25)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                backdropFilter: 'blur(10px)',
+                            }}
+                        >
                             {getWeatherIcon(weatherData.weather)}
-                            <Typography variant="h6" fontWeight="bold">
-                                날씨 정보
+                        </Box>
+                        <Box>
+                            <Typography
+                                variant="h6"
+                                sx={{
+                                    fontWeight: 700,
+                                    color: 'white',
+                                    lineHeight: 1.2,
+                                    fontSize: '1.1rem'
+                                }}
+                            >
+                                현재 날씨
+                            </Typography>
+                            <Typography
+                                variant="caption"
+                                sx={{
+                                    color: 'rgba(255,255,255,0.9)',
+                                    fontSize: '0.75rem'
+                                }}
+                            >
+                                실시간 기상 정보
                             </Typography>
                         </Box>
-                        <IconButton
-                            onClick={() => setIsOpen(false)}
-                            size="small"
-                            sx={{ width: 32, height: 32 }}
-                        >
-                            ×
-                        </IconButton>
                     </Box>
+                    <IconButton
+                        onClick={() => setIsOpen(false)}
+                        size="small"
+                        sx={{
+                            color: 'white',
+                            bgcolor: 'rgba(255,255,255,0.2)',
+                            '&:hover': {
+                                bgcolor: 'rgba(255,255,255,0.3)',
+                            }
+                        }}
+                    >
+                        <CloseIcon fontSize="small" />
+                    </IconButton>
+                </Box>
 
-                    {/* 2x2 그리드 */}
-                    <Grid container spacing={1.5}>
-                        {weatherData.temperature && (
-                            <Grid item xs={6}>
-                                <Box display="flex" alignItems="center" gap={0.5}>
-                                    <ThermostatIcon fontSize="small" color="error" />
-                                    <Typography variant="body2">
-                                        {weatherData.temperature}°C
-                                    </Typography>
-                                </Box>
-                            </Grid>
-                        )}
-
-                        {weatherData.feelsLike && (
-                            <Grid item xs={6}>
-                                <Box display="flex" alignItems="center" gap={0.5}>
-                                    <ThermostatIcon fontSize="small" color="action" />
-                                    <Typography variant="body2">
-                                        체감 {weatherData.feelsLike}°C
-                                    </Typography>
-                                </Box>
-                            </Grid>
-                        )}
-
+                {/* 메인 온도 표시 */}
+                {weatherData.temperature && (
+                    <Box
+                        sx={{
+                            textAlign: 'center',
+                            py: 3,
+                            background: 'linear-gradient(to bottom, rgba(96,165,250,0.1) 0%, transparent 100%)'
+                        }}
+                    >
+                        <Typography
+                            variant="h2"
+                            sx={{
+                                fontWeight: 800,
+                                background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                lineHeight: 1,
+                                mb: 1
+                            }}
+                        >
+                            {weatherData.temperature}°
+                        </Typography>
                         {weatherData.weather && (
-                            <Grid item xs={6}>
-                                <Box display="flex" alignItems="center" gap={0.5}>
-                                    <CloudIcon fontSize="small" color="primary" />
-                                    <Typography variant="body2">
-                                        {weatherData.weather}
+                            <Chip
+                                label={weatherData.weather}
+                                size="small"
+                                sx={{
+                                    fontWeight: 600,
+                                    bgcolor: 'rgba(59, 130, 246, 0.1)',
+                                    color: '#2563eb',
+                                    border: '1px solid rgba(59, 130, 246, 0.2)'
+                                }}
+                            />
+                        )}
+                    </Box>
+                )}
+
+                {/* 상세 정보 그리드 */}
+                <Box sx={{ px: 3, pb: 3 }}>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                        {weatherData.feelsLike && (
+                            <Box
+                                sx={{
+                                    p: 2,
+                                    borderRadius: '12px',
+                                    bgcolor: 'rgba(239, 68, 68, 0.08)',
+                                    border: '1px solid rgba(239, 68, 68, 0.15)',
+                                    transition: 'all 0.2s',
+                                    '&:hover': {
+                                        bgcolor: 'rgba(239, 68, 68, 0.12)',
+                                        transform: 'translateY(-2px)',
+                                    }
+                                }}
+                            >
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                                    <ThermostatIcon sx={{ fontSize: 20, color: '#ef4444' }} />
+                                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
+                                        체감온도
                                     </Typography>
                                 </Box>
-                            </Grid>
+                                <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e293b' }}>
+                                    {weatherData.feelsLike}°C
+                                </Typography>
+                            </Box>
                         )}
 
                         {weatherData.humidity && (
-                            <Grid item xs={6}>
-                                <Box display="flex" alignItems="center" gap={0.5}>
-                                    <OpacityIcon fontSize="small" color="info" />
-                                    <Typography variant="body2">
-                                        {weatherData.humidity}%
+                            <Box
+                                sx={{
+                                    p: 2,
+                                    borderRadius: '12px',
+                                    bgcolor: 'rgba(59, 130, 246, 0.08)',
+                                    border: '1px solid rgba(59, 130, 246, 0.15)',
+                                    transition: 'all 0.2s',
+                                    '&:hover': {
+                                        bgcolor: 'rgba(59, 130, 246, 0.12)',
+                                        transform: 'translateY(-2px)',
+                                    }
+                                }}
+                            >
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                                    <OpacityIcon sx={{ fontSize: 20, color: '#3b82f6' }} />
+                                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
+                                        습도
                                     </Typography>
                                 </Box>
-                            </Grid>
+                                <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e293b' }}>
+                                    {weatherData.humidity}%
+                                </Typography>
+                            </Box>
                         )}
-                    </Grid>
+                    </Box>
 
+                    {/* 날짜/시간 정보 */}
                     {weatherData.date && weatherData.time && (
-                        <Typography variant="caption" color="text.secondary" mt={1} display="block">
-                            {weatherData.date} {weatherData.time}
-                        </Typography>
+                        <Box
+                            sx={{
+                                mt: 2.5,
+                                pt: 2.5,
+                                borderTop: '1px solid rgba(0,0,0,0.06)',
+                                textAlign: 'center'
+                            }}
+                        >
+                            <Typography
+                                variant="caption"
+                                sx={{
+                                    color: '#64748b',
+                                    fontWeight: 500,
+                                    fontSize: '0.75rem'
+                                }}
+                            >
+                                📅 {weatherData.date} • 🕐 {weatherData.time}
+                            </Typography>
+                        </Box>
                     )}
-                </CardContent>
-            </Card>
+                </Box>
+            </Paper>
         </Box>
     );
 }

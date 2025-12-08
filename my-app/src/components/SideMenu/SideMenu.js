@@ -21,6 +21,8 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import SearchIcon from "@mui/icons-material/Search";
 import MenuIcon from "@mui/icons-material/Menu";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import SearchBox from "../../modules/searchbox";
 import {
     StyledSideMenu,
@@ -38,7 +40,11 @@ import 'dayjs/locale/ko'
 export default function SideMenu({
     markers,
     handleSelectStation,
-    onChangeInfo
+    onChangeInfo,
+    weatherOpacity,
+    onWeatherOpacityChange,
+    weatherVisible,
+    onWeatherVisibleChange
 }) {
 
 
@@ -210,16 +216,15 @@ export default function SideMenu({
                 variant="persistent"
                 sx={{
                     '& .MuiDrawer-paper': {
-                        width: 420,
+                        width: 380,
                         maxWidth: '90vw',
-                        left: '105px',
+                        left: '90px',
                         height: '100vh',
                         position: 'fixed',
                         zIndex: 1100,
-                        boxShadow: '3px 0 15px rgba(0, 0, 0, 0.08)',
-                        backgroundColor: 'rgba(248, 250, 252, 0.98)',
-                        backdropFilter: 'blur(12px)',
-                        borderRight: '2px solid rgba(0, 0, 0, 0.06)',
+                        boxShadow: '2px 0 8px rgba(0, 0, 0, 0.08)',
+                        backgroundColor: '#f8fafc',
+                        borderRight: '1px solid rgba(0, 0, 0, 0.08)',
                     },
                 }}
             >
@@ -229,63 +234,138 @@ export default function SideMenu({
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        padding: '16px 20px',
-                        borderBottom: '2px solid rgba(0, 0, 0, 0.06)',
+                        padding: '18px 24px',
+                        borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+                        bgcolor: 'white'
                     }}
                 >
-                    <Box display="flex" alignItems="center" gap={1}>
-                        <MenuIcon color="primary" />
-                        <Typography variant="h6" fontWeight="bold">
-                            지도 및 경로 설정
+                    <Box display="flex" alignItems="center" gap={1.5}>
+                        <MenuIcon sx={{ color: '#1976d2', fontSize: 22 }} />
+                        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.05rem' }}>
+                            맵 설정
                         </Typography>
                     </Box>
                     <IconButton onClick={() => setActiveMenu(null)} size="small">
-                        <ArrowBackIosNewIcon />
+                        <ArrowBackIosNewIcon sx={{ fontSize: 18 }} />
                     </IconButton>
                 </Box>
 
                 {/* 사이드바 컨텐츠 */}
-                <Box sx={{ p: 2 }}>
-                    <Card sx={{ mb: 2 }}>
-                        <CardContent>
-                            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                                경로 API
-                            </Typography>
-                            <FormControl fullWidth>
-                                <InputLabel>경로 API 선택</InputLabel>
-                                <Select
-                                    value={selectedRouteAPI}
-                                    label="경로 API 선택"
-                                    onChange={(e) => setselectedRouteAPI(e.target.value)}
-                                    sx={{ height: 48 }}
-                                >
-                                    <MenuItem value="ors">OpenRouteService</MenuItem>
-                                    <MenuItem value="gh">GraphHopper</MenuItem>
-                                    {/* <MenuItem value="tmap" disabled>TMAP</MenuItem> */}
-                                </Select>
-                            </FormControl>
-                        </CardContent>
-                    </Card>
+                <Box sx={{ p: 3, overflowY: 'auto', height: 'calc(100vh - 70px)' }}>
+                    {/* 경로 API */}
+                    <Box sx={{ mb: 3 }}>
+                        <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 700, color: '#1e293b', fontSize: '0.95rem' }}>
+                            경로 API
+                        </Typography>
+                        <FormControl fullWidth size="small">
+                            <Select
+                                value={selectedRouteAPI}
+                                onChange={(e) => setselectedRouteAPI(e.target.value)}
+                                sx={{
+                                    bgcolor: 'white',
+                                    borderRadius: '8px',
+                                    '& .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: 'rgba(0,0,0,0.1)'
+                                    }
+                                }}
+                            >
+                                <MenuItem value="ors">OpenRouteService</MenuItem>
+                                <MenuItem value="gh">GraphHopper</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Box>
 
-                    <Card>
-                        <CardContent>
-                            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                                지도 유형
-                            </Typography>
-                            <FormControl fullWidth>
-                                <InputLabel>지도 유형</InputLabel>
-                                <Select
-                                    value={mapType}
-                                    label="지도 유형"
-                                    onChange={(e) => setMapType(e.target.value)}
-                                    sx={{ height: 48 }}
+                    <Divider sx={{ my: 3 }} />
+
+                    {/* 지도 유형 */}
+                    <Box sx={{ mb: 3 }}>
+                        <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 700, color: '#1e293b', fontSize: '0.95rem' }}>
+                            지도 유형
+                        </Typography>
+                        <FormControl fullWidth size="small">
+                            <Select
+                                value={mapType}
+                                onChange={(e) => setMapType(e.target.value)}
+                                sx={{
+                                    bgcolor: 'white',
+                                    borderRadius: '8px',
+                                    '& .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: 'rgba(0,0,0,0.1)'
+                                    }
+                                }}
+                            >
+                                <MenuItem value="normal">일반 지도</MenuItem>
+                                <MenuItem value="aerial">위성 지도</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Box>
+
+                    <Divider sx={{ my: 3 }} />
+
+                    {/* 날씨 레이어 투명도 */}
+                    <Box>
+                        <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 700, color: '#1e293b', fontSize: '0.95rem' }}>
+                            날씨 레이어 투명도
+                        </Typography>
+                        <Box sx={{
+                            p: 2.5,
+                            bgcolor: 'white',
+                            borderRadius: '12px',
+                            border: '1px solid rgba(0,0,0,0.08)',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+                        }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                    <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+                                        투명도
+                                    </Typography>
+                                    <Typography variant="body1" sx={{ color: '#1976d2', fontWeight: 700, fontSize: '1.1rem' }}>
+                                        {Math.round(weatherOpacity * 100)}%
+                                    </Typography>
+                                </Box>
+                                <IconButton
+                                    onClick={() => onWeatherVisibleChange(!weatherVisible)}
+                                    size="small"
+                                    sx={{
+                                        width: 36,
+                                        height: 36,
+                                        bgcolor: weatherVisible ? 'rgba(25, 118, 210, 0.08)' : 'rgba(148, 163, 184, 0.08)',
+                                        color: weatherVisible ? '#1976d2' : '#94a3b8',
+                                        '&:hover': {
+                                            bgcolor: weatherVisible ? 'rgba(25, 118, 210, 0.15)' : 'rgba(148, 163, 184, 0.15)'
+                                        }
+                                    }}
                                 >
-                                    <MenuItem value="normal">일반 지도</MenuItem>
-                                    <MenuItem value="aerial">위성 지도</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </CardContent>
-                    </Card>
+                                    {weatherVisible ? <VisibilityIcon sx={{ fontSize: 20 }} /> : <VisibilityOffIcon sx={{ fontSize: 20 }} />}
+                                </IconButton>
+                            </Box>
+                            <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                value={weatherOpacity * 100}
+                                onChange={(e) => onWeatherOpacityChange(e.target.value / 100)}
+                                disabled={!weatherVisible}
+                                style={{
+                                    width: '100%',
+                                    height: '8px',
+                                    background: weatherVisible
+                                        ? `linear-gradient(to right, #1976d2 0%, #1976d2 ${weatherOpacity * 100}%, #e2e8f0 ${weatherOpacity * 100}%, #e2e8f0 100%)`
+                                        : '#e2e8f0',
+                                    borderRadius: '6px',
+                                    outline: 'none',
+                                    cursor: weatherVisible ? 'pointer' : 'not-allowed',
+                                    opacity: weatherVisible ? 1 : 0.4,
+                                    WebkitAppearance: 'none',
+                                    appearance: 'none'
+                                }}
+                            />
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1.5 }}>
+                                <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.75rem' }}>투명</Typography>
+                                <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.75rem' }}>불투명</Typography>
+                            </Box>
+                        </Box>
+                    </Box>
                 </Box>
             </Drawer>
 
@@ -298,16 +378,15 @@ export default function SideMenu({
                 variant="persistent"
                 sx={{
                     '& .MuiDrawer-paper': {
-                        width: 420,
+                        width: 380,
                         maxWidth: '90vw',
-                        left: '105px',
+                        left: '90px',
                         height: '100vh',
                         position: 'fixed',
                         zIndex: 1100,
-                        boxShadow: '3px 0 15px rgba(0, 0, 0, 0.08)',
-                        backgroundColor: 'rgba(248, 250, 252, 0.98)',
-                        backdropFilter: 'blur(12px)',
-                        borderRight: '2px solid rgba(0, 0, 0, 0.06)',
+                        boxShadow: '2px 0 8px rgba(0, 0, 0, 0.08)',
+                        backgroundColor: '#f8fafc',
+                        borderRight: '1px solid rgba(0, 0, 0, 0.08)',
                     },
                 }}
             >
@@ -317,23 +396,24 @@ export default function SideMenu({
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        padding: '16px 20px',
-                        borderBottom: '2px solid rgba(0, 0, 0, 0.06)',
+                        padding: '18px 24px',
+                        borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+                        bgcolor: 'white'
                     }}
                 >
-                    <Box display="flex" alignItems="center" gap={1}>
-                        <SearchIcon color="primary" />
-                        <Typography variant="h6" fontWeight="bold">
+                    <Box display="flex" alignItems="center" gap={1.5}>
+                        <SearchIcon sx={{ color: '#1976d2', fontSize: 22 }} />
+                        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.05rem' }}>
                             역 검색
                         </Typography>
                     </Box>
                     <IconButton onClick={() => setActiveMenu(null)} size="small">
-                        <ArrowBackIosNewIcon />
+                        <ArrowBackIosNewIcon sx={{ fontSize: 18 }} />
                     </IconButton>
                 </Box>
 
                 {/* 사이드바 컨텐츠 */}
-                <Box sx={{ p: 2 }}>
+                <Box sx={{ p: 3 }}>
                     <SearchBox markers={markers} onSelect={handleSelectStation} />
                 </Box>
             </Drawer>
@@ -347,16 +427,15 @@ export default function SideMenu({
                 variant="persistent"
                 sx={{
                     '& .MuiDrawer-paper': {
-                        width: 420,
+                        width: 380,
                         maxWidth: '90vw',
-                        left: '105px',
+                        left: '90px',
                         height: '100vh',
                         position: 'fixed',
                         zIndex: 1100,
-                        boxShadow: '3px 0 15px rgba(0, 0, 0, 0.08)',
-                        backgroundColor: 'rgba(248, 250, 252, 0.98)',
-                        backdropFilter: 'blur(12px)',
-                        borderRight: '2px solid rgba(0, 0, 0, 0.06)',
+                        boxShadow: '2px 0 8px rgba(0, 0, 0, 0.08)',
+                        backgroundColor: '#f8fafc',
+                        borderRight: '1px solid rgba(0, 0, 0, 0.08)',
                     },
                 }}
             >
@@ -366,108 +445,100 @@ export default function SideMenu({
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        padding: '16px 20px',
-                        borderBottom: '2px solid rgba(0, 0, 0, 0.06)',
+                        padding: '18px 24px',
+                        borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+                        bgcolor: 'white'
                     }}
                 >
-                    <Box display="flex" alignItems="center" gap={1}>
-                        <AccessTimeIcon color="primary" />
-                        <Typography variant="h6" fontWeight="bold">
+                    <Box display="flex" alignItems="center" gap={1.5}>
+                        <AccessTimeIcon sx={{ color: '#1976d2', fontSize: 22 }} />
+                        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.05rem' }}>
                             시간 선택
                         </Typography>
                     </Box>
                     <IconButton onClick={() => setActiveMenu(null)} size="small">
-                        <ArrowBackIosNewIcon />
+                        <ArrowBackIosNewIcon sx={{ fontSize: 18 }} />
                     </IconButton>
                 </Box>
 
                 {/* 사이드바 컨텐츠 */}
-                <Box sx={{ p: 2 }}>
-                    <Card sx={{ mb: 2 }}>
-                        <CardContent>
-                            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                                날짜 선택
-                            </Typography>
-
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                    <DatePicker
-                                        label="날짜 선택"
-                                        value={selectedDate}
-                                        onChange={(newValue) => {
-                                            setSelectedDate(newValue)
-                                            console.log(newValue)
-                                            setSelectedDay(getDayTypeEn(newValue.format("dddd")))
-                                        }}
-                                        minDate={today}
-                                        maxDate={oneWeekLater}
-                                        format="YYYY-MM-DD"
-                                        slotProps={{
-                                            textField: {
-                                                fullWidth: true
-                                            }
-                                        }}
-                                    />
-
-                                    <div style={{ fontSize: 15 }}>
-                                        {/* 선택한 날짜: {selectedDate.format("YYYY-MM-DD")}{" "}
-                                ({selectedDate.format("dddd")}) */}
-                                    </div>
-                                </div>
-                            </LocalizationProvider>
-                            {/* <FormControl fullWidth>
-                                <InputLabel>요일 선택</InputLabel>
-                                <Select
-                                    value={selectedDay}
-                                    label="요일 선택"
-                                    onChange={(e) => setSelectedDay(e.target.value)}
-                                    sx={{ height: 48 }}
-                                >
-                                    <MenuItem value="평일">평일</MenuItem>
-                                    <MenuItem value="토요일">토요일</MenuItem>
-                                    <MenuItem value="일요일">일요일</MenuItem>
-                                </Select>
-                            </FormControl> */}
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardContent>
-                            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                                시간 선택
-                            </Typography>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <TextField
-                                    label="시간 선택"
-                                    type="time"
-                                    value={selectedTime}
-                                    onChange={(e) => setSelectedTime(e.target.value)}
-                                    fullWidth
-                                    InputLabelProps={{ shrink: true }}
-                                    inputProps={{ step: 300 }}
-                                    sx={{ flex: 1 }}
-                                />
-                                <Tooltip title="현재 시간으로 설정" arrow>
-                                    <IconButton
-                                        onClick={e => {
-                                            getcurt()
-                                            setSelectedDate(today)
-                                        }}
-                                        color="primary"
-                                        sx={{
-                                            width: 48,
-                                            height: 48,
-                                            border: '1px solid #ccc',
+                <Box sx={{ p: 3, overflowY: 'auto', height: 'calc(100vh - 70px)' }}>
+                    {/* 날짜 선택 */}
+                    <Box sx={{ mb: 3 }}>
+                        <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600, color: '#334155' }}>
+                            날짜 선택
+                        </Typography>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DatePicker
+                                value={selectedDate}
+                                onChange={(newValue) => {
+                                    setSelectedDate(newValue)
+                                    setSelectedDay(getDayTypeEn(newValue.format("dddd")))
+                                }}
+                                minDate={today}
+                                maxDate={oneWeekLater}
+                                format="YYYY-MM-DD"
+                                slotProps={{
+                                    textField: {
+                                        fullWidth: true,
+                                        size: 'small',
+                                        sx: {
+                                            bgcolor: 'white',
                                             borderRadius: '8px',
-                                            flexShrink: 0,
-                                        }}
-                                    >
-                                        <AccessTimeIcon sx={{ fontSize: 24 }} />
-                                    </IconButton>
-                                </Tooltip>
-                            </Box>
-                        </CardContent>
-                    </Card>
+                                            '& .MuiOutlinedInput-notchedOutline': {
+                                                borderColor: 'rgba(0,0,0,0.1)'
+                                            }
+                                        }
+                                    }
+                                }}
+                            />
+                        </LocalizationProvider>
+                    </Box>
+
+                    <Divider sx={{ my: 3 }} />
+
+                    {/* 시간 선택 */}
+                    <Box>
+                        <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600, color: '#334155' }}>
+                            시간 선택
+                        </Typography>
+                        <Box sx={{ display: 'flex', gap: 1.5 }}>
+                            <TextField
+                                type="time"
+                                value={selectedTime}
+                                onChange={(e) => setSelectedTime(e.target.value)}
+                                fullWidth
+                                size="small"
+                                InputLabelProps={{ shrink: true }}
+                                inputProps={{ step: 300 }}
+                                sx={{
+                                    bgcolor: 'white',
+                                    borderRadius: '8px',
+                                    '& .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: 'rgba(0,0,0,0.1)'
+                                    }
+                                }}
+                            />
+                            <IconButton
+                                onClick={() => {
+                                    getcurt()
+                                    setSelectedDate(today)
+                                }}
+                                sx={{
+                                    bgcolor: 'white',
+                                    border: '1px solid rgba(0,0,0,0.1)',
+                                    borderRadius: '8px',
+                                    width: 40,
+                                    height: 40,
+                                    '&:hover': {
+                                        bgcolor: 'rgba(25, 118, 210, 0.04)'
+                                    }
+                                }}
+                            >
+                                <AccessTimeIcon sx={{ fontSize: 20, color: '#1976d2' }} />
+                            </IconButton>
+                        </Box>
+                    </Box>
                 </Box>
             </Drawer>
         </>
