@@ -71,6 +71,10 @@ export default function SideMenu({
 
     const [activeMenu, setActiveMenu] = useState(null); // 'time' | 'search' | 'menu' | null
 
+    const today = dayjs();
+    const oneWeekLater = today.add(6, "day");
+    const [selectedDate, setSelectedDate] = useState(today);
+
     const toggleMenu = (menu) => {
         setActiveMenu((prev) => (prev === menu ? null : menu));
     };
@@ -81,8 +85,8 @@ export default function SideMenu({
     };
 
     useEffect(() => {
-        onChangeInfo(selectedTime, selectedDay, selectedRouteAPI, mapType)
-    }, [selectedTime, selectedDay, selectedRouteAPI, mapType]);
+        onChangeInfo(selectedTime, selectedDay, selectedRouteAPI, mapType, selectedDate)
+    }, [selectedTime, selectedDay, selectedRouteAPI, mapType, selectedDate]);
 
     // 메뉴 아이템 정의
     const menuItems = [
@@ -106,9 +110,7 @@ export default function SideMenu({
         },
     ];
 
-    const today = dayjs();
-    const oneWeekLater = today.add(6, "day");
-    const [selectedDate, setSelectedDate] = useState(today);
+    
     return (
         <>
             {/* 메인 사이드바 */}

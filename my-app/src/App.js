@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MapContainer, TileLayer, Marker, useMap, Polyline } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMap, Polyline, WMSTileLayer } from "react-leaflet";
 import ZoomMarkers from "./modules/ZoomMarkers";
 import ChatWidget from "./modules/ChatWidget";
 import L from "leaflet";
@@ -16,6 +16,9 @@ import { getRoute } from './modules/getRoute'
 import CameraControlBtnGroup from './components/CameraControlBtnGroup/CameraControlBtnGroup';
 import currentLocationIconUrl from "./assets/image/curLocation_marker.png";
 import CongestionLegend from "./components/CongestionLegend/CongestionLegend";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+dayjs.extend(utc)
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -130,6 +133,8 @@ function App() {
     return `${hours}:${minutes}`;
   };
 
+  const today_ = dayjs();
+
   const [markers, setMarkers] = useState([]);
   const [myPos, setMyPos] = useState(null);
   const [subwayData, setSubwayData] = useState([]);
@@ -137,6 +142,7 @@ function App() {
   // 초기값: 진짜 현재 시간 (예: 10:58)
   const [selectedTime, setSelectedTime] = useState(getCurrentTime);
   const [selectedDay, setSelectedDay] = useState(getDayType);
+  const [selectedDate, setSelectedDate] = useState(today_);
 
   const [targetStation, setTargetStation] = useState(null);
 
@@ -321,12 +327,20 @@ function App() {
   };
 
   // Sidebar에서 변경된 시간을 그대로 상태에 반영 (스냅 X)
-  const handleInfo = (time_, day_, routeapi_, maptype_) => {
+  const handleInfo = (time_, day_, routeapi_, maptype_, date_) => {
     setSelectedTime(time_); // "10:58" 그대로 저장
     setSelectedDay(day_);
     setselectedRouteAPI(routeapi_);
     setMapType(maptype_);
+
+    const date = new Date(date_.$d);
+    const result = dayjs(date).utc().format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
+
+
+    setSelectedDate(result)
   };
+
+  const wmsKey = `${mapType}-${selectedDate}-${selectedTime}`;
 
   return (
     <Box sx={{ position: "relative", height: "100vh", display: "flex" }}>
@@ -350,6 +364,18 @@ function App() {
         ref={mapRef}
       >
         <TileLayer key={tileUrls[mapType]} url={tileUrls[mapType]} maxZoom={20} minZoom={8.0} />
+        <WMSTileLayer
+          url="http://43.203.150.74:8080/geoserver/weather/wms"
+          layers="weather:rasters"
+          format="image/png"
+          transparent={true}
+          opacity={0.2}
+          params={{
+              time: selectedDate
+              // time: "2025-12-05T12:00:00.000Z"
+          }}
+          key={wmsKey}
+        />
         {targetStation && <FlyToLocation position={targetStation} />}
         {myPos && <FlyToLocation position={myPos} />}
         {myPos && <Marker position={myPos} icon={currentLocationIcon} />}
