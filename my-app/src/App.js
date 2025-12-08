@@ -145,7 +145,8 @@ function App() {
   // 초기값: 진짜 현재 시간 (예: 10:58)
   const [selectedTime, setSelectedTime] = useState(getCurrentTime);
   const [selectedDay, setSelectedDay] = useState(getDayType);
-  const [selectedDate, setSelectedDate] = useState(today_);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedDate2, setSelectedDate2] = useState(today_);
 
   const [targetStation, setTargetStation] = useState(null);
 
@@ -178,7 +179,7 @@ function App() {
 
   // 역 위치 로딩
   useEffect(() => {
-    loadCSV("http://localhost:8081/api/data/stations").then((data) => {
+    loadCSV("http://localhost:8080/api/data/stations").then((data) => {
       const mappedData = data.map(item => ({
         ...item,
         name: item.stationName
@@ -194,7 +195,7 @@ function App() {
     // 화면에는 selectedTime(10:58)을 유지하고,
     // 서버 요청용 URL 만들 때만 snapTo30Min을 써서 11:00으로 변환함.
     const apiTime = snapTo30Min(selectedTime);
-    const url = `http://localhost:8081/api/data/congestion/time?dayType=${selectedDay}&slotTime=${apiTime}`;
+    const url = `http://localhost:8080/api/data/congestion/time?dayType=${selectedDay}&slotTime=${apiTime}`;
 
     console.log(`[API 요청] 화면시간: ${selectedTime} -> 요청시간: ${apiTime}`);
 
@@ -250,7 +251,7 @@ function App() {
 
       console.log('[LLM API 요청 데이터]', { date: formattedDate, time: formattedTime });
 
-      const res = await fetch("http://localhost:8081/api/info", {
+      const res = await fetch("http://localhost:8080/api/info", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -268,6 +269,8 @@ function App() {
           time: formattedTime,      // 시간 (HH:mm:ss)
         }),
       });
+
+      console.log(formattedDate)
 
       if (!res.ok) {
         console.error(`LLM API 응답 에러: ${res.status}`);
@@ -387,12 +390,12 @@ function App() {
     const date = new Date(date_.$d);
     const result = dayjs(date).utc().format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
 
-
-    setSelectedDate(result)
+    setSelectedDate(date_)
+    setSelectedDate2(result)
 
   };
 
-  const wmsKey = `${mapType}-${selectedDate}-${selectedTime}`;
+  const wmsKey = `${mapType}-${selectedDate2}-${selectedTime}`;
 
   return (
     <Box sx={{ position: "relative", height: "100vh", display: "flex" }}>
@@ -423,7 +426,7 @@ function App() {
           transparent={true}
           opacity={0.2}
           params={{
-              time: selectedDate
+              time: selectedDate2
               // time: "2025-12-05T12:00:00.000Z"
           }}
           key={wmsKey}
