@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { MapContainer, TileLayer, Marker, useMap, Polyline, WMSTileLayer } from "react-leaflet";
 import ZoomMarkers from "./modules/ZoomMarkers";
 import ChatWidget from "./modules/ChatWidget";
@@ -395,6 +395,22 @@ function App() {
 
   };
 
+  const mergeDateAndTime = (dateStr, timeStr) => {
+  const date = new Date(dateStr);           // ISO 날짜 파싱
+  const [hours, minutes] = timeStr.split(":").map(Number);
+  
+  date.setHours(hours);
+  date.setMinutes(minutes);
+  date.setSeconds(0);
+  date.setMilliseconds(0);
+
+  return date.toISOString();
+};
+
+  const wmsParams = useMemo(() => ({
+    time: mergeDateAndTime(selectedDate2, selectedTime),
+  }), [selectedDate2, selectedTime]);
+
   const wmsKey = `${mapType}-${selectedDate2}-${selectedTime}`;
 
   return (
@@ -425,10 +441,12 @@ function App() {
           format="image/png"
           transparent={true}
           opacity={0.2}
-          params={{
-              time: selectedDate2
-              // time: "2025-12-05T12:00:00.000Z"
-          }}
+          overlay={true}
+          updateWhenZooming={false}
+          updateWhenIdle={true}
+          tileSize={256}
+          keepBuffer={4} 
+          params={wmsParams}
           key={wmsKey}
         />
         {targetStation && <FlyToLocation position={targetStation} />}
