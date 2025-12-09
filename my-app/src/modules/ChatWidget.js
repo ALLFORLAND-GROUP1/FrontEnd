@@ -69,10 +69,10 @@ function ChatWidget({ botMessage, infoMessage }) {
       elevation={12}
       sx={{
         position: "fixed",
-        right: 24,
-        bottom: 24,
+        right: 12,
+        bottom: 8,
         width: 400,
-        height: 600,
+        height: 500,
         borderRadius: "20px",
         overflow: "hidden",
         display: "flex",

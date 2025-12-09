@@ -291,6 +291,15 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
       (row) => row.ho == m.ho && row.stationName === m.name
     );
 
+    console.log('🔍 혼잡도 데이터 확인:', {
+      stationName: m.name,
+      ho: m.ho,
+      totalSubwayData: subwayData.length,
+      filteredDirections: directions,
+      selectedDay,
+      selectedTime
+    });
+
     showPopup({
       lat: e.latlng.lat,
       lng: e.latlng.lng,

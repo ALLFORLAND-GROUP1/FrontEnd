@@ -8,7 +8,7 @@ export async function getWeather(date, time, lat, lon) {
         // 시간을 시(hour)와 분(minute)으로 분리
         const [hour, minute] = time.split(':');
 
-        const url = `http://localhost:8080/api/weather/by-coordinates?lat=${lat}&lon=${lon}&date=${formattedDate}&hour=${hour}&minute=${minute}`;
+        const url = `http://localhost:8081/api/weather/by-coordinates?lat=${lat}&lon=${lon}&date=${formattedDate}&hour=${hour}&minute=${minute}`;
 
         const res = await fetch(url);
 

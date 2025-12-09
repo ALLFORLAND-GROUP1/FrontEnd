@@ -1,8 +1,10 @@
-import React from 'react';
-import { Paper, Typography, Box, Chip } from '@mui/material';
+import React, { useState } from 'react';
+import { Paper, Typography, Box, Chip, IconButton } from '@mui/material';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import MinimizeIcon from '@mui/icons-material/Minimize';
 
 const CongestionLegend = ({ title = '실시간 혼잡도', unit = '%' }) => {
+  const [isOpen, setIsOpen] = useState(true);
   const levels = [
     { label: '쾌적', color: '#4ade80', range: '0-25' },
     { label: '보통', color: '#fbbf24', range: '25-50' },
@@ -10,13 +12,43 @@ const CongestionLegend = ({ title = '실시간 혼잡도', unit = '%' }) => {
     { label: '매우혼잡', color: '#ef4444', range: '75-100' },
   ];
 
+  // 축소된 버튼 상태
+  if (!isOpen) {
+    return (
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: 24,
+          left: 110,
+          zIndex: 1000,
+        }}
+      >
+        <IconButton
+          onClick={() => setIsOpen(true)}
+          sx={{
+            width: 56,
+            height: 56,
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 1)',
+            },
+          }}
+        >
+          <PeopleAltIcon sx={{ color: '#3b82f6', fontSize: 28 }} />
+        </IconButton>
+      </Box>
+    );
+  }
+
   return (
     <Paper
       elevation={8}
       sx={{
         position: 'absolute',
         bottom: 24,
-        left: 130,
+        left: 110,
         zIndex: 1000,
         padding: '18px 22px',
         minWidth: 320,
@@ -40,22 +72,19 @@ const CongestionLegend = ({ title = '실시간 혼잡도', unit = '%' }) => {
             {title}
           </Typography>
         </Box>
-        <Chip
-          label="LIVE"
+        <IconButton
+          onClick={() => setIsOpen(false)}
           size="small"
           sx={{
-            height: 22,
-            fontSize: '0.7rem',
-            fontWeight: 700,
-            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-            color: 'white',
-            animation: 'pulse 2s ease-in-out infinite',
-            '@keyframes pulse': {
-              '0%, 100%': { opacity: 1 },
-              '50%': { opacity: 0.7 },
+            color: '#64748b',
+            bgcolor: 'rgba(100, 116, 139, 0.08)',
+            '&:hover': {
+              bgcolor: 'rgba(100, 116, 139, 0.15)',
             },
           }}
-        />
+        >
+          <MinimizeIcon fontSize="small" />
+        </IconButton>
       </Box>
 
       <Box

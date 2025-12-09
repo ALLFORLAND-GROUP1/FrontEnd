@@ -15,7 +15,9 @@ import {
     Avatar,
     Drawer,
     Card,
-    CardContent
+    CardContent,
+    Stack,
+    Slider
 } from "@mui/material";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import SearchIcon from "@mui/icons-material/Search";
@@ -23,7 +25,16 @@ import MenuIcon from "@mui/icons-material/Menu";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import AltRouteIcon from "@mui/icons-material/AltRoute";
+import LayersIcon from "@mui/icons-material/Layers";
+import OpacityIcon from "@mui/icons-material/Opacity";
+import EventNoteIcon from "@mui/icons-material/EventNote";
+import WatchLaterIcon from "@mui/icons-material/WatchLater";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import TipsAndUpdatesIcon from "@mui/icons-material/TipsAndUpdates";
 import SearchBox from "../../modules/searchbox";
+import IconBox from "./IconBox";
 import {
     StyledSideMenu,
     LogoContainer,
@@ -104,9 +115,9 @@ export default function SideMenu({
         },
         {
             id: 'time',
-            label: '시간 선택',
-            icon: <AccessTimeIcon />,
-            description: '시간 및 요일 설정',
+            label: '일정 설정',
+            icon: <EventNoteIcon />,
+            description: '날짜 및 시간 설정',
         },
         {
             id: 'search',
@@ -218,7 +229,7 @@ export default function SideMenu({
                     '& .MuiDrawer-paper': {
                         width: 380,
                         maxWidth: '90vw',
-                        left: '90px',
+                        left: '100px',
                         height: '100vh',
                         position: 'fixed',
                         zIndex: 1100,
@@ -239,12 +250,14 @@ export default function SideMenu({
                         bgcolor: 'white'
                     }}
                 >
-                    <Box display="flex" alignItems="center" gap={1.5}>
-                        <MenuIcon sx={{ color: '#1976d2', fontSize: 22 }} />
-                        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.05rem' }}>
+                    <Stack direction="row" alignItems="center" spacing={1.5}>
+                        <IconBox width={36} height={36}>
+                            <MenuIcon sx={{ fontSize: 20 }} />
+                        </IconBox>
+                        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '0.3px' }}>
                             맵 설정
                         </Typography>
-                    </Box>
+                    </Stack>
                     <IconButton onClick={() => setActiveMenu(null)} size="small">
                         <ArrowBackIosNewIcon sx={{ fontSize: 18 }} />
                     </IconButton>
@@ -253,74 +266,100 @@ export default function SideMenu({
                 {/* 사이드바 컨텐츠 */}
                 <Box sx={{ p: 3, overflowY: 'auto', height: 'calc(100vh - 70px)' }}>
                     {/* 경로 API */}
-                    <Box sx={{ mb: 3 }}>
-                        <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 700, color: '#1e293b', fontSize: '0.95rem' }}>
-                            경로 API
-                        </Typography>
-                        <FormControl fullWidth size="small">
-                            <Select
-                                value={selectedRouteAPI}
-                                onChange={(e) => setselectedRouteAPI(e.target.value)}
-                                sx={{
-                                    bgcolor: 'white',
-                                    borderRadius: '8px',
-                                    '& .MuiOutlinedInput-notchedOutline': {
-                                        borderColor: 'rgba(0,0,0,0.1)'
-                                    }
-                                }}
-                            >
-                                <MenuItem value="ors">OpenRouteService</MenuItem>
-                                <MenuItem value="gh">GraphHopper</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Box>
-
-                    <Divider sx={{ my: 3 }} />
-
-                    {/* 지도 유형 */}
-                    <Box sx={{ mb: 3 }}>
-                        <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 700, color: '#1e293b', fontSize: '0.95rem' }}>
-                            지도 유형
-                        </Typography>
-                        <FormControl fullWidth size="small">
-                            <Select
-                                value={mapType}
-                                onChange={(e) => setMapType(e.target.value)}
-                                sx={{
-                                    bgcolor: 'white',
-                                    borderRadius: '8px',
-                                    '& .MuiOutlinedInput-notchedOutline': {
-                                        borderColor: 'rgba(0,0,0,0.1)'
-                                    }
-                                }}
-                            >
-                                <MenuItem value="normal">일반 지도</MenuItem>
-                                <MenuItem value="aerial">위성 지도</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Box>
-
-                    <Divider sx={{ my: 3 }} />
-
-                    {/* 날씨 레이어 투명도 */}
-                    <Box>
-                        <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 700, color: '#1e293b', fontSize: '0.95rem' }}>
-                            날씨 레이어 투명도
-                        </Typography>
-                        <Box sx={{
-                            p: 2.5,
-                            bgcolor: 'white',
-                            borderRadius: '12px',
-                            border: '1px solid rgba(0,0,0,0.08)',
-                            boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
-                        }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                    <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
-                                        투명도
-                                    </Typography>
-                                    <Typography variant="body1" sx={{ color: '#1976d2', fontWeight: 700, fontSize: '1.1rem' }}>
-                                        {Math.round(weatherOpacity * 100)}%
+                    <Card sx={{
+                        mb: 3,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(16, 185, 129, 0.12)',
+                        background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)'
+                    }}>
+                        <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
+                            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+                                <IconBox width={40} height={40} bgcolor="#10b981">
+                                    <AltRouteIcon sx={{ fontSize: 22 }} />
+                                </IconBox>
+                                <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1rem', lineHeight: 1.3 }}>
+                                    경로 API
+                                </Typography>
+                            </Stack>
+                            <FormControl fullWidth size="small">
+                                <Select
+                                    value={selectedRouteAPI}
+                                    onChange={(e) => setselectedRouteAPI(e.target.value)}
+                                    sx={{
+                                        bgcolor: 'white',
+                                        borderRadius: '10px',
+                                        '& .MuiOutlinedInput-notchedOutline': {
+                                            borderColor: 'rgba(16, 185, 129, 0.2)'
+                                        },
+                                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                                            borderColor: 'rgba(16, 185, 129, 0.4)'
+                                        },
+                                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                            borderColor: '#10b981'
+                                        }
+                                    }}
+                                >
+                                    <MenuItem value="ors">OpenRouteService</MenuItem>
+                                    <MenuItem value="gh">GraphHopper</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </CardContent>
+                    </Card>                    {/* 지도 유형 */}
+                    <Card sx={{
+                        mb: 2.5,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(139, 92, 246, 0.12)',
+                        background: 'linear-gradient(135deg, #ffffff 0%, #faf5ff 100%)'
+                    }}>
+                        <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
+                            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+                                <IconBox width={40} height={40} bgcolor="#8b5cf6">
+                                    <LayersIcon sx={{ fontSize: 22 }} />
+                                </IconBox>
+                                <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1rem', lineHeight: 1.3 }}>
+                                    지도 유형
+                                </Typography>
+                            </Stack>
+                            <FormControl fullWidth size="small">
+                                <Select
+                                    value={mapType}
+                                    onChange={(e) => setMapType(e.target.value)}
+                                    sx={{
+                                        bgcolor: 'white',
+                                        borderRadius: '10px',
+                                        '& .MuiOutlinedInput-notchedOutline': {
+                                            borderColor: 'rgba(139, 92, 246, 0.2)'
+                                        },
+                                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                                            borderColor: 'rgba(139, 92, 246, 0.4)'
+                                        },
+                                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                            borderColor: '#8b5cf6'
+                                        }
+                                    }}
+                                >
+                                    <MenuItem value="normal">일반 지도</MenuItem>
+                                    <MenuItem value="aerial">위성 지도</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </CardContent>
+                    </Card>                    {/* 날씨 레이어 투명도 */}
+                    <Card sx={{
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(59, 130, 246, 0.12)',
+                        background: 'linear-gradient(135deg, #ffffff 0%, #eff6ff 100%)'
+                    }}>
+                        <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
+                            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2.5 }}>
+                                <IconBox width={40} height={40} bgcolor="#3b82f6">
+                                    <OpacityIcon sx={{ fontSize: 22 }} />
+                                </IconBox>
+                                <Box sx={{ flex: 1 }}>
+                                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1rem', lineHeight: 1.3 }}>
+                                        날씨 레이어
                                     </Typography>
                                 </Box>
                                 <IconButton
@@ -329,43 +368,89 @@ export default function SideMenu({
                                     sx={{
                                         width: 36,
                                         height: 36,
-                                        bgcolor: weatherVisible ? 'rgba(25, 118, 210, 0.08)' : 'rgba(148, 163, 184, 0.08)',
-                                        color: weatherVisible ? '#1976d2' : '#94a3b8',
+                                        bgcolor: weatherVisible ? 'rgba(59, 130, 246, 0.1)' : 'rgba(148, 163, 184, 0.08)',
+                                        color: weatherVisible ? '#3b82f6' : '#94a3b8',
                                         '&:hover': {
-                                            bgcolor: weatherVisible ? 'rgba(25, 118, 210, 0.15)' : 'rgba(148, 163, 184, 0.15)'
+                                            bgcolor: weatherVisible ? 'rgba(59, 130, 246, 0.2)' : 'rgba(148, 163, 184, 0.15)'
                                         }
                                     }}
                                 >
                                     {weatherVisible ? <VisibilityIcon sx={{ fontSize: 20 }} /> : <VisibilityOffIcon sx={{ fontSize: 20 }} />}
                                 </IconButton>
+                            </Stack>
+
+                            <Divider sx={{ my: 2 }} />
+
+                            <Box sx={{ position: 'relative', px: 1 }}>
+                                <Box sx={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    mb: 1
+                                }}>
+                                    <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 500 }}>
+                                        투명도
+                                    </Typography>
+                                    <Typography
+                                        variant="caption"
+                                        sx={{
+                                            color: '#3b82f6',
+                                            fontSize: '0.85rem',
+                                            fontWeight: 700,
+                                            bgcolor: 'rgba(59, 130, 246, 0.08)',
+                                            px: 1.5,
+                                            py: 0.5,
+                                            borderRadius: '8px'
+                                        }}
+                                    >
+                                        {Math.round(weatherOpacity * 100)}%
+                                    </Typography>
+                                </Box>
+                                <Slider
+                                    value={weatherOpacity * 100}
+                                    onChange={(e, newValue) => onWeatherOpacityChange(newValue / 100)}
+                                    disabled={!weatherVisible}
+                                    min={0}
+                                    max={100}
+                                    sx={{
+                                        color: '#3b82f6',
+                                        height: 6,
+                                        '& .MuiSlider-track': {
+                                            border: 'none',
+                                            background: 'linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%)'
+                                        },
+                                        '& .MuiSlider-rail': {
+                                            opacity: 0.3,
+                                            bgcolor: '#cbd5e1'
+                                        },
+                                        '& .MuiSlider-thumb': {
+                                            width: 20,
+                                            height: 20,
+                                            bgcolor: '#fff',
+                                            border: '3px solid #3b82f6',
+                                            boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)',
+                                            '&:hover': {
+                                                boxShadow: '0 0 0 8px rgba(59, 130, 246, 0.16)'
+                                            },
+                                            '&.Mui-active': {
+                                                boxShadow: '0 0 0 12px rgba(59, 130, 246, 0.16)'
+                                            }
+                                        },
+                                        '&.Mui-disabled': {
+                                            color: '#cbd5e1',
+                                            '& .MuiSlider-thumb': {
+                                                border: '3px solid #cbd5e1'
+                                            }
+                                        }
+                                    }}
+                                />
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
+                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.7rem' }}>투명</Typography>
+                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.7rem' }}>불투명</Typography>
+                                </Box>
                             </Box>
-                            <input
-                                type="range"
-                                min="0"
-                                max="100"
-                                value={weatherOpacity * 100}
-                                onChange={(e) => onWeatherOpacityChange(e.target.value / 100)}
-                                disabled={!weatherVisible}
-                                style={{
-                                    width: '100%',
-                                    height: '8px',
-                                    background: weatherVisible
-                                        ? `linear-gradient(to right, #1976d2 0%, #1976d2 ${weatherOpacity * 100}%, #e2e8f0 ${weatherOpacity * 100}%, #e2e8f0 100%)`
-                                        : '#e2e8f0',
-                                    borderRadius: '6px',
-                                    outline: 'none',
-                                    cursor: weatherVisible ? 'pointer' : 'not-allowed',
-                                    opacity: weatherVisible ? 1 : 0.4,
-                                    WebkitAppearance: 'none',
-                                    appearance: 'none'
-                                }}
-                            />
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1.5 }}>
-                                <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.75rem' }}>투명</Typography>
-                                <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.75rem' }}>불투명</Typography>
-                            </Box>
-                        </Box>
-                    </Box>
+                        </CardContent>
+                    </Card>
                 </Box>
             </Drawer>
 
@@ -380,7 +465,7 @@ export default function SideMenu({
                     '& .MuiDrawer-paper': {
                         width: 380,
                         maxWidth: '90vw',
-                        left: '90px',
+                        left: '100px',
                         height: '100vh',
                         position: 'fixed',
                         zIndex: 1100,
@@ -401,24 +486,43 @@ export default function SideMenu({
                         bgcolor: 'white'
                     }}
                 >
-                    <Box display="flex" alignItems="center" gap={1.5}>
-                        <SearchIcon sx={{ color: '#1976d2', fontSize: 22 }} />
-                        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.05rem' }}>
+                    <Stack direction="row" alignItems="center" spacing={1.5}>
+                        <IconBox width={36} height={36}>
+                            <SearchIcon sx={{ fontSize: 20 }} />
+                        </IconBox>
+                        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '0.3px' }}>
                             역 검색
                         </Typography>
-                    </Box>
+                    </Stack>
                     <IconButton onClick={() => setActiveMenu(null)} size="small">
                         <ArrowBackIosNewIcon sx={{ fontSize: 18 }} />
                     </IconButton>
                 </Box>
 
                 {/* 사이드바 컨텐츠 */}
-                <Box sx={{ p: 3 }}>
-                    <SearchBox markers={markers} onSelect={handleSelectStation} />
+                <Box sx={{ p: 3, overflowY: 'auto', height: 'calc(100vh - 70px)' }}>
+                    <Card sx={{
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(59, 130, 246, 0.12)',
+                        background: 'linear-gradient(135deg, #ffffff 0%, #eff6ff 100%)'
+                    }}>
+                        <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
+                            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2.5 }}>
+                                <IconBox width={40} height={40} bgcolor="#3b82f6">
+                                    <LocationOnIcon sx={{ fontSize: 22 }} />
+                                </IconBox>
+                                <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1rem', lineHeight: 1.3 }}>
+                                    역 이름 검색
+                                </Typography>
+                            </Stack>
+                            <SearchBox markers={markers} onSelect={handleSelectStation} />
+                        </CardContent>
+                    </Card>
                 </Box>
             </Drawer>
 
-            {/* 시간 선택 사이드바 */}
+            {/* 일정 설정 사이드바 */}
             <Drawer
                 anchor="left"
                 open={activeMenu === 'time'}
@@ -429,7 +533,7 @@ export default function SideMenu({
                     '& .MuiDrawer-paper': {
                         width: 380,
                         maxWidth: '90vw',
-                        left: '90px',
+                        left: '100px',
                         height: '100vh',
                         position: 'fixed',
                         zIndex: 1100,
@@ -450,12 +554,14 @@ export default function SideMenu({
                         bgcolor: 'white'
                     }}
                 >
-                    <Box display="flex" alignItems="center" gap={1.5}>
-                        <AccessTimeIcon sx={{ color: '#1976d2', fontSize: 22 }} />
-                        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.05rem' }}>
-                            시간 선택
+                    <Stack direction="row" alignItems="center" spacing={1.5}>
+                        <IconBox width={36} height={36}>
+                            <EventNoteIcon sx={{ fontSize: 20 }} />
+                        </IconBox>
+                        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '0.3px' }}>
+                            일정 설정
                         </Typography>
-                    </Box>
+                    </Stack>
                     <IconButton onClick={() => setActiveMenu(null)} size="small">
                         <ArrowBackIosNewIcon sx={{ fontSize: 18 }} />
                     </IconButton>
@@ -464,81 +570,117 @@ export default function SideMenu({
                 {/* 사이드바 컨텐츠 */}
                 <Box sx={{ p: 3, overflowY: 'auto', height: 'calc(100vh - 70px)' }}>
                     {/* 날짜 선택 */}
-                    <Box sx={{ mb: 3 }}>
-                        <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600, color: '#334155' }}>
-                            날짜 선택
-                        </Typography>
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <DatePicker
-                                value={selectedDate}
-                                onChange={(newValue) => {
-                                    setSelectedDate(newValue)
-                                    setSelectedDay(getDayTypeEn(newValue.format("dddd")))
-                                }}
-                                minDate={today}
-                                maxDate={oneWeekLater}
-                                format="YYYY-MM-DD"
-                                slotProps={{
-                                    textField: {
-                                        fullWidth: true,
-                                        size: 'small',
-                                        sx: {
-                                            bgcolor: 'white',
-                                            borderRadius: '8px',
-                                            '& .MuiOutlinedInput-notchedOutline': {
-                                                borderColor: 'rgba(0,0,0,0.1)'
+                    <Card sx={{
+                        mb: 3,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(236, 72, 153, 0.12)',
+                        background: 'linear-gradient(135deg, #ffffff 0%, #fdf2f8 100%)'
+                    }}>
+                        <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
+                            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+                                <IconBox width={40} height={40} bgcolor="#ec4899">
+                                    <EventNoteIcon sx={{ fontSize: 22 }} />
+                                </IconBox>
+                                <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1rem', lineHeight: 1.3 }}>
+                                    날짜 선택
+                                </Typography>
+                            </Stack>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <DatePicker
+                                    value={selectedDate}
+                                    onChange={(newValue) => {
+                                        setSelectedDate(newValue)
+                                        setSelectedDay(getDayTypeEn(newValue.format("dddd")))
+                                    }}
+                                    minDate={today}
+                                    maxDate={oneWeekLater}
+                                    format="YYYY-MM-DD"
+                                    slotProps={{
+                                        textField: {
+                                            fullWidth: true,
+                                            size: 'small',
+                                            sx: {
+                                                bgcolor: 'white',
+                                                borderRadius: '10px',
+                                                '& .MuiOutlinedInput-notchedOutline': {
+                                                    borderColor: 'rgba(236, 72, 153, 0.2)'
+                                                },
+                                                '&:hover .MuiOutlinedInput-notchedOutline': {
+                                                    borderColor: 'rgba(236, 72, 153, 0.4)'
+                                                },
+                                                '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                                    borderColor: '#ec4899'
+                                                }
                                             }
                                         }
-                                    }
-                                }}
-                            />
-                        </LocalizationProvider>
-                    </Box>
-
-                    <Divider sx={{ my: 3 }} />
-
-                    {/* 시간 선택 */}
-                    <Box>
-                        <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600, color: '#334155' }}>
-                            시간 선택
-                        </Typography>
-                        <Box sx={{ display: 'flex', gap: 1.5 }}>
-                            <TextField
-                                type="time"
-                                value={selectedTime}
-                                onChange={(e) => setSelectedTime(e.target.value)}
-                                fullWidth
-                                size="small"
-                                InputLabelProps={{ shrink: true }}
-                                inputProps={{ step: 300 }}
-                                sx={{
-                                    bgcolor: 'white',
-                                    borderRadius: '8px',
-                                    '& .MuiOutlinedInput-notchedOutline': {
-                                        borderColor: 'rgba(0,0,0,0.1)'
-                                    }
-                                }}
-                            />
-                            <IconButton
-                                onClick={() => {
-                                    getcurt()
-                                    setSelectedDate(today)
-                                }}
-                                sx={{
-                                    bgcolor: 'white',
-                                    border: '1px solid rgba(0,0,0,0.1)',
-                                    borderRadius: '8px',
-                                    width: 40,
-                                    height: 40,
-                                    '&:hover': {
-                                        bgcolor: 'rgba(25, 118, 210, 0.04)'
-                                    }
-                                }}
-                            >
-                                <AccessTimeIcon sx={{ fontSize: 20, color: '#1976d2' }} />
-                            </IconButton>
-                        </Box>
-                    </Box>
+                                    }}
+                                />
+                            </LocalizationProvider>
+                        </CardContent>
+                    </Card>                    {/* 시간 선택 */}
+                    <Card sx={{
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(6, 182, 212, 0.12)',
+                        background: 'linear-gradient(135deg, #ffffff 0%, #ecfeff 100%)'
+                    }}>
+                        <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
+                            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+                                <IconBox width={40} height={40} bgcolor="#06b6d4">
+                                    <WatchLaterIcon sx={{ fontSize: 22 }} />
+                                </IconBox>
+                                <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1rem', lineHeight: 1.3 }}>
+                                    시간 선택
+                                </Typography>
+                            </Stack>
+                            <Box sx={{ display: 'flex', gap: 1.5 }}>
+                                <TextField
+                                    type="time"
+                                    value={selectedTime}
+                                    onChange={(e) => setSelectedTime(e.target.value)}
+                                    fullWidth
+                                    size="small"
+                                    InputLabelProps={{ shrink: true }}
+                                    inputProps={{ step: 300 }}
+                                    sx={{
+                                        bgcolor: 'white',
+                                        borderRadius: '10px',
+                                        '& .MuiOutlinedInput-notchedOutline': {
+                                            borderColor: 'rgba(6, 182, 212, 0.2)'
+                                        },
+                                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                                            borderColor: 'rgba(6, 182, 212, 0.4)'
+                                        },
+                                        '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                            borderColor: '#06b6d4'
+                                        }
+                                    }}
+                                />
+                                <Tooltip title="현재 시간" placement="top" arrow>
+                                    <IconButton
+                                        onClick={() => {
+                                            getcurt()
+                                            setSelectedDate(today)
+                                        }}
+                                        sx={{
+                                            bgcolor: 'rgba(6, 182, 212, 0.1)',
+                                            border: '1px solid rgba(6, 182, 212, 0.2)',
+                                            borderRadius: '10px',
+                                            width: 40,
+                                            height: 40,
+                                            color: '#06b6d4',
+                                            '&:hover': {
+                                                bgcolor: 'rgba(6, 182, 212, 0.2)'
+                                            }
+                                        }}
+                                    >
+                                        <WatchLaterIcon sx={{ fontSize: 20 }} />
+                                    </IconButton>
+                                </Tooltip>
+                            </Box>
+                        </CardContent>
+                    </Card>
                 </Box>
             </Drawer>
         </>
