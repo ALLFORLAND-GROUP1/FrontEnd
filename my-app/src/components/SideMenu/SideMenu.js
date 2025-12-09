@@ -359,7 +359,7 @@ export default function SideMenu({
                                 </IconBox>
                                 <Box sx={{ flex: 1 }}>
                                     <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1rem', lineHeight: 1.3 }}>
-                                        날씨 레이어
+                                        날씨 레이어 시각화
                                     </Typography>
                                 </Box>
                                 <IconButton
@@ -378,6 +378,62 @@ export default function SideMenu({
                                     {weatherVisible ? <VisibilityIcon sx={{ fontSize: 20 }} /> : <VisibilityOffIcon sx={{ fontSize: 20 }} />}
                                 </IconButton>
                             </Stack>
+
+                            {/* 날씨 온도 범례 */}
+                            <Box sx={{
+                                mb: 2.5,
+                                p: 2,
+                                bgcolor: 'rgba(59, 130, 246, 0.04)',
+                                borderRadius: '12px',
+                                border: '1px solid rgba(59, 130, 246, 0.12)'
+                            }}>
+                                <Typography
+                                    variant="caption"
+                                    sx={{
+                                        display: 'block',
+                                        mb: 1.5,
+                                        color: '#64748b',
+                                        fontSize: '0.75rem',
+                                        fontWeight: 600,
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.5px'
+                                    }}
+                                >
+                                    온도 범례 (°C)
+                                </Typography>
+                                <Box sx={{
+                                    height: 14,
+                                    borderRadius: '8px',
+                                    background: 'linear-gradient(to right, #000080 0%, #00C0FF 16.67%, #40FFFF 33.33%, #FFFF00 50%, #FF5000 66.67%, #FF0000 83.33%, #600000 100%)',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.15), inset 0 1px 2px rgba(255,255,255,0.3)',
+                                    mb: 1.5,
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    '&::after': {
+                                        content: '""',
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        right: 0,
+                                        height: '50%',
+                                        background: 'linear-gradient(to bottom, rgba(255,255,255,0.3), transparent)',
+                                        borderRadius: '8px 8px 0 0',
+                                    }
+                                }} />
+                                <Box sx={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    px: 0.5
+                                }}>
+                                    <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 700 }}>-10</Typography>
+                                    <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 700 }}>-5</Typography>
+                                    <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 700 }}>0</Typography>
+                                    <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 700 }}>5</Typography>
+                                    <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 700 }}>10</Typography>
+                                    <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 700 }}>15</Typography>
+                                    <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 700 }}>20</Typography>
+                                </Box>
+                            </Box>
 
                             <Divider sx={{ my: 2 }} />
 
