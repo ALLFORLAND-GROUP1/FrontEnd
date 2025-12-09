@@ -115,7 +115,7 @@ export default function SideMenu({
         },
         {
             id: 'time',
-            label: '일정 설정',
+            label: '시점 설정',
             icon: <EventNoteIcon />,
             description: '날짜 및 시간 설정',
         },
@@ -615,7 +615,7 @@ export default function SideMenu({
                             <EventNoteIcon sx={{ fontSize: 20 }} />
                         </IconBox>
                         <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '0.3px' }}>
-                            일정 설정
+                            시점 설정
                         </Typography>
                     </Stack>
                     <IconButton onClick={() => setActiveMenu(null)} size="small">
