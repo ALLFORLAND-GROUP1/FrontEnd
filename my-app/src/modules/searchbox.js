@@ -44,40 +44,86 @@ function SearchBox({ markers, onSelect }) {
             setOpen(false); // ✅ 선택 시 닫기
           }
         }}
-        renderOption={(props, option) => (
-  <Box
-    component="li"
-    {...props}
-    key={`${option.name}-${option.ho}`} // ✅ 고유 key
-    sx={{
-      display: "flex",
-      justifyContent: "space-between",
-      width: "100%",
-    }}
-  >
-    <Typography variant="body2">{option.name}</Typography>
-    <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-      {option.ho}호선
-    </Typography>
-  </Box>
-)}
+        renderOption={(props, option) => {
+          // 호선별 색상 매핑
+          const lineColors = {
+            '1': '#0052a4',
+            '2': '#00a84d',
+            '3': '#ef7c1c',
+            '4': '#00a5de',
+            '5': '#996cac',
+            '6': '#cd7c2f',
+            '7': '#747f00',
+            '8': '#e6186c',
+            '9': '#bdb092'
+          };
+          const lineColor = lineColors[option.ho] || '#666';
+
+          return (
+            <Box
+              component="li"
+              {...props}
+              key={`${option.name}-${option.ho}`}
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                width: "100%",
+                py: 1.5,
+                px: 2,
+                borderBottom: '1px solid rgba(0,0,0,0.04)',
+                '&:last-child': {
+                  borderBottom: 'none',
+                },
+                '&:hover': {
+                  bgcolor: 'rgba(59, 130, 246, 0.04)',
+                },
+                '&.Mui-focused': {
+                  bgcolor: 'rgba(59, 130, 246, 0.08)',
+                }
+              }}
+            >
+              <Typography variant="body1" sx={{ fontWeight: 600, color: '#0f172a', fontSize: '0.95rem' }}>
+                {option.name}
+              </Typography>
+              <Box sx={{
+                px: 1.5,
+                py: 0.5,
+                borderRadius: '8px',
+                bgcolor: lineColor,
+                ml: 2
+              }}>
+                <Typography variant="caption" sx={{ color: 'white', fontWeight: 700, fontSize: '0.75rem' }}>
+                  {option.ho}호선
+                </Typography>
+              </Box>
+            </Box>
+          );
+        }}
         renderInput={(params) => (
           <TextField
             {...params}
             label="역 이름 입력"
+            placeholder="예: 양천향교역"
             variant="outlined"
-            size="small"
+            size="medium"
             sx={{
-              '& .MuiInputBase-root': {
-                height: 36,
-              },
-              '& .MuiInputBase-input': {
-                padding: '6px 8px',
-                boxSizing: 'border-box',
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '12px',
+                bgcolor: 'white',
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#3b82f6',
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#3b82f6',
+                  borderWidth: '2px',
+                }
               },
               '& .MuiInputLabel-root': {
-                top: '0x',
-                fontSize: '0.9rem',
+                fontSize: '0.95rem',
+                '&.Mui-focused': {
+                  color: '#3b82f6',
+                }
               },
             }}
           />

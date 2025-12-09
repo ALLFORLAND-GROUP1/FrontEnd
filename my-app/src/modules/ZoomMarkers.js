@@ -66,7 +66,7 @@ function createMarkerIcon(intervalNum, name, ho) {
   });
 }
 
-function getHoColor(num){
+function getHoColor(num) {
   if (num === 1) return "#0052A4"
   if (num === 2) return "#00A84D"
   if (num === 3) return "#EF7C1C"
@@ -79,38 +79,21 @@ function getHoColor(num){
 }
 
 function getIntervalColor(intervalNum) {
-  if (intervalNum === null) return "gray";
-  if (intervalNum < 20) return "#4CAF50";
-  if (intervalNum < 40) return "#FFC107";
-  if (intervalNum < 60) return "#FF9800";
+  if (intervalNum === null || intervalNum === undefined) return "gray";
+  if (intervalNum < 30) return "#4CAF50"; // 백엔드 데이터 기준값 반영
+  if (intervalNum < 60) return "#FFC107";
+  if (intervalNum < 90) return "#FF9800";
   return "#F44336";
 }
 
-function findClosestTimeColumn(selectedTime, row) {
-  if (!selectedTime) return null;
-  const [sh, sm] = selectedTime.split(":").map(Number);
-  const selectedMinutes = sh * 60 + sm;
-
-  const timeColumns = Object.keys(row).filter((key) => /^\d{1,2}:\d{2}$/.test(key));
-
-  let closest = null;
-  let minDiff = Infinity;
-  timeColumns.forEach((col) => {
-    const [h, m] = col.split(":").map(Number);
-    const minutes = h * 60 + m;
-    const diff = Math.abs(selectedMinutes - minutes);
-    if (diff < minDiff) {
-      minDiff = diff;
-      closest = col;
-    }
-  });
-  return closest;
-}
+// 백엔드 데이터는 특정 시간의 값을 바로 주므로 컬럼 찾기 로직 제거됨.
+// 기존 코드 구조 유지를 위해 함수 틀은 남기지 않고, 호출부에서 로직을 변경함.
 
 // 팝업 내용 생성 함수
 function generatePopupContent(data) {
-  const { name, ho, upDownTypes, directions, col, selectedDay, selectedTime } = data;
-  
+  // col 제거 (백엔드 데이터에는 시간 컬럼 키가 없음)
+  const { name, ho, directions, selectedDay, selectedTime } = data;
+
   return `
     <div class="subway-info-card">
       <div class="subway-header">
@@ -127,46 +110,34 @@ function generatePopupContent(data) {
       <div class="subway-content">
         <div class="intervals-title">🚇 혼잡도 </div>
         <div class="intervals-list">
-          ${upDownTypes.map((type, i) => {
-            const row = directions.find((d) => d["upDown"] === type);
-            const interval = col && row ? row[col] : "0";
-            let intervalClass = 'no-service';
-            let intervalNum = null;
-            
-            if (interval !== '0') {
-              intervalNum = parseFloat(interval);
-              if (intervalNum < 20) {
-                intervalClass = 'interval-0';
-              } else if (intervalNum < 40) {
-                intervalClass = 'interval-10';
-              } else if (intervalNum < 60) {
-                intervalClass = 'interval-20';
-              } else if (intervalNum < 80) {
-                intervalClass = 'interval-30';
-              } else if (intervalNum < 100) {
-                intervalClass = 'interval-40';
-              } else {
-                intervalClass = 'interval-50';
-              }
-            }
-            
-            return `
+          ${directions.map((item) => {
+    // 백엔드 DTO 매핑 (upDown -> direction, row[col] -> congestion)
+    const type = item.direction;
+    const intervalNum = item.congestion || 0;
+    let intervalClass = 'no-service';
+
+    if (intervalNum > 0) {
+      if (intervalNum < 30) {
+        intervalClass = 'interval-0';
+      } else if (intervalNum < 60) {
+        intervalClass = 'interval-20';
+      } else if (intervalNum < 90) {
+        intervalClass = 'interval-40';
+      } else {
+        intervalClass = 'interval-50';
+      }
+    }
+
+    return `
               <button class="interval-item" data-direction="${type}" data-interval="${intervalNum}">
                 <span class="direction">${type}</span>
                 <span class="interval ${intervalClass}">
-                  ${interval}
+                  ${intervalNum.toFixed(1)}%
                 </span>
               </button>
             `;
-          }).join('')}
+  }).join('')}
         </div>
-
-        ${col ? `
-          <div class="closest-time">
-            <span class="time-icon">⏱️</span>
-            가장 가까운 시간: <strong>${col}</strong>
-          </div>
-        ` : ''}
       </div>
     </div>
   `;
@@ -191,17 +162,17 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
         // 기존 리스너 제거를 위해 복제
         const newBtn = btn.cloneNode(true);
         btn.parentNode.replaceChild(newBtn, btn);
-        
+
         newBtn.addEventListener('click', (e) => {
           const direction = e.currentTarget.getAttribute('data-direction');
           const interval = parseFloat(e.currentTarget.getAttribute('data-interval'));
           if (onMarkerClickOnly) {
             onMarkerClickOnly(
-              { lat: data.lat, lng: data.lng }, 
-              data.name, 
-              data.dist, 
-              data.dur, 
-              direction, 
+              { lat: data.lat, lng: data.lng },
+              data.name,
+              data.dist,
+              data.dur,
+              direction,
               interval
             );
           }
@@ -215,11 +186,11 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
     if (!map || !popupData) return;
 
     const { lat, lng, name, ho } = popupData;
-    
+
     // 같은 마커인지 확인
-    const isSameMarker = currentPopupDataRef.current && 
-                         currentPopupDataRef.current.name === name && 
-                         currentPopupDataRef.current.ho === ho;
+    const isSameMarker = currentPopupDataRef.current &&
+      currentPopupDataRef.current.name === name &&
+      currentPopupDataRef.current.ho === ho;
 
     if (isSameMarker && popupRef.current) {
       // 같은 마커면 내용만 업데이트 (깜빡임 없음)
@@ -238,7 +209,7 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
 
     // 새 팝업 생성
     const popupContent = generatePopupContent(popupData);
-    
+
     const popup = L.popup({
       closeButton: true,
       maxWidth: 280,
@@ -274,7 +245,7 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
         map.flyTo([lat, lng], targetZoom, { duration: 1.2 });
       }
 
-      const distance = await onMarkerClick({'lat': lat, 'lng':lng}, key.slice(0, -2));
+      const distance = await onMarkerClick({ 'lat': lat, 'lng': lng }, key.slice(0, -2));
       const d = parseFloat(distance.info.distance);
       const t = parseFloat(distance.info.duration);
 
@@ -284,20 +255,18 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
       // 팝업 데이터 준비
       const marker = markers.find(m => `${m.name}-${m.ho}` === key);
       if (marker) {
+        // 백엔드 데이터 필터링 (stationName, ho 사용)
+        // 백엔드에서 이미 해당 시간대 데이터를 주므로 date 체크 로직 삭제
         const directions = subwayData.filter(
-          (row) => row["date"] === selectedDay && row["ho"] === marker.ho && row["name"] === marker.name
+          (row) => row.ho == marker.ho && row.stationName === marker.name
         );
-        const upDownTypes = [...new Set(directions.map((row) => row["upDown"]))];
-        const col = directions.length > 0 ? findClosestTimeColumn(selectedTime, directions[0]) : null;
 
         showPopup({
           lat,
           lng,
           name: marker.name,
           ho: marker.ho,
-          upDownTypes,
-          directions,
-          col,
+          directions, // 필터링된 데이터 리스트 (DTO)
           selectedDay,
           selectedTime,
           dist: d,
@@ -317,21 +286,26 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
     distRef.current = d;
     durRef.current = t;
 
-    // 팝업 데이터 설정
+    // 백엔드 데이터 필터링 (stationName, ho 사용)
     const directions = subwayData.filter(
-      (row) => row["date"] === selectedDay && row["ho"] === m.ho && row["name"] === m.name
+      (row) => row.ho == m.ho && row.stationName === m.name
     );
-    const upDownTypes = [...new Set(directions.map((row) => row["upDown"]))];
-    const col = directions.length > 0 ? findClosestTimeColumn(selectedTime, directions[0]) : null;
+
+    console.log('🔍 혼잡도 데이터 확인:', {
+      stationName: m.name,
+      ho: m.ho,
+      totalSubwayData: subwayData.length,
+      filteredDirections: directions,
+      selectedDay,
+      selectedTime
+    });
 
     showPopup({
       lat: e.latlng.lat,
       lng: e.latlng.lng,
       name: m.name,
       ho: m.ho,
-      upDownTypes,
       directions,
-      col,
       selectedDay,
       selectedTime,
       dist: d,
@@ -343,20 +317,16 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
   useEffect(() => {
     if (currentPopupDataRef.current && popupRef.current) {
       const { name, ho } = currentPopupDataRef.current;
-      
+
       // 현재 팝업의 마커 데이터 다시 가져오기
       const directions = subwayData.filter(
-        (row) => row["date"] === selectedDay && row["ho"] === ho && row["name"] === name
+        (row) => row.ho == ho && row.stationName === name
       );
-      const upDownTypes = [...new Set(directions.map((row) => row["upDown"]))];
-      const col = directions.length > 0 ? findClosestTimeColumn(selectedTime, directions[0]) : null;
 
       // 팝업 데이터 업데이트
       const updatedData = {
         ...currentPopupDataRef.current,
-        upDownTypes,
         directions,
-        col,
         selectedDay,
         selectedTime
       };
@@ -387,7 +357,7 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
       disableClusteringAtZoom={15}
       maxClusterRadius={180}
       iconCreateFunction={(cluster) => {
-        const zoom = cluster._group._map.getZoom(); 
+        const zoom = cluster._group._map.getZoom();
         let size = 40;
 
         if (zoom < 14) size = 60;
@@ -404,11 +374,7 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
             ? nums.reduce((a, b) => a + b, 0) / nums.length
             : 0;
 
-        let color = "gray";
-        if (avg < 30) color = "#4CAF50";
-        else if (avg < 60) color = "#FFC107";
-        else if (avg < 90) color = "#FF9800";
-        else color = "#F44336";
+        const color = getIntervalColor(avg);
 
         return L.divIcon({
           html: `<div class="cluster-icon" style="
@@ -431,24 +397,26 @@ const ZoomMarkers = forwardRef(function ZoomMarkers(
     >
       {markers.map((m) => {
         const key = `${m.name}-${m.ho}`;
-        const directions = subwayData.filter(
-          (row) => row["date"] === selectedDay && row["ho"] === m.ho && row["name"] === m.name
-        );
-        const col = directions.length > 0 ? findClosestTimeColumn(selectedTime, directions[0]) : null;
 
+        // 백엔드 데이터 필터링
+        const directions = subwayData.filter(
+          (row) => row.ho == m.ho && row.stationName === m.name
+        );
+
+        // 평균 혼잡도 계산 (DTO의 congestion 필드 사용)
         let intervalNum = null;
-        if (col && directions[0] && directions[1]) {
-          const value = (parseFloat(directions[0][col]) + parseFloat(directions[1][col])) / 2;
-          intervalNum = isNaN(value) ? null : value;
+        if (directions.length > 0) {
+          const sum = directions.reduce((acc, cur) => acc + (cur.congestion || 0), 0);
+          intervalNum = sum / directions.length;
         }
 
         return (
-          <Marker 
-            key={key} 
-            position={[m.lat, m.lng]} 
-            icon={createMarkerIcon(intervalNum, m.name, m.ho)} 
-            ref={(el) => (markerRefs.current[key] = el)} 
-            intervalNum={intervalNum} 
+          <Marker
+            key={key}
+            position={[m.lat, m.lng]}
+            icon={createMarkerIcon(intervalNum, m.name, m.ho)}
+            ref={(el) => (markerRefs.current[key] = el)}
+            intervalNum={intervalNum}
             eventHandlers={{
               click: (e) => handleMarkerClick(e, m)
             }}

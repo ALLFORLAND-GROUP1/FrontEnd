@@ -1,15 +1,16 @@
 // src/utils/csvLoader.js
-import Papa from "papaparse";
 
-// 공통 CSV 로더 함수
-export const loadCSV = (path) => {
-  return new Promise((resolve, reject) => {
-    Papa.parse(path, {
-      download: true,
-      header: true,
-      dynamicTyping: true,
-      complete: (result) => resolve(result.data),
-      error: (err) => reject(err),
-    });
-  });
+export const loadCSV = async (url) => {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Data loading failed:", error);
+    return [];
+  }
 };
