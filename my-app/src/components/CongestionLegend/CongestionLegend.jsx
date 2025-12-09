@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Paper, Typography, Box, Chip, IconButton } from '@mui/material';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
-import MinimizeIcon from '@mui/icons-material/Minimize';
+import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen';
 
 const CongestionLegend = ({ title = '실시간 혼잡도', unit = '%' }) => {
   const [isOpen, setIsOpen] = useState(true);
@@ -18,16 +18,16 @@ const CongestionLegend = ({ title = '실시간 혼잡도', unit = '%' }) => {
       <Box
         sx={{
           position: 'absolute',
-          bottom: 24,
-          left: 110,
+          bottom: 10,
+          right: 431,
           zIndex: 1000,
         }}
       >
         <IconButton
           onClick={() => setIsOpen(true)}
           sx={{
-            width: 56,
-            height: 56,
+            width: 60,
+            height: 60,
             backgroundColor: 'rgba(255, 255, 255, 0.95)',
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
             borderRadius: '12px',
@@ -47,8 +47,8 @@ const CongestionLegend = ({ title = '실시간 혼잡도', unit = '%' }) => {
       elevation={8}
       sx={{
         position: 'absolute',
-        bottom: 24,
-        left: 110,
+        bottom: 12,
+        right: 435,
         zIndex: 1000,
         padding: '18px 22px',
         minWidth: 320,
@@ -83,7 +83,7 @@ const CongestionLegend = ({ title = '실시간 혼잡도', unit = '%' }) => {
             },
           }}
         >
-          <MinimizeIcon fontSize="small" />
+          <CloseFullscreenIcon fontSize="small" />
         </IconButton>
       </Box>
 

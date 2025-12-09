@@ -4,7 +4,7 @@ import CloudIcon from "@mui/icons-material/Cloud";
 import OpacityIcon from "@mui/icons-material/Opacity";
 import AirIcon from "@mui/icons-material/Air";
 import ThermostatIcon from "@mui/icons-material/Thermostat";
-import MinimizeIcon from "@mui/icons-material/Minimize";
+import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen';
 import { useState } from "react";
 
 // 날씨 상태에 따른 아이콘 매핑
@@ -37,16 +37,16 @@ export default function WeatherWidget({ weatherData }) {
             <Box
                 sx={{
                     position: "fixed",
-                    top: 100,
-                    right: 24,
+                    top: 20,
+                    right: 120,
                     zIndex: 1000,
                 }}
             >
                 <IconButton
                     onClick={() => setIsOpen(true)}
                     sx={{
-                        width: 56,
-                        height: 56,
+                        width: 53,
+                        height: 53,
                         backgroundColor: "rgba(255, 255, 255, 0.95)",
                         boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
                         borderRadius: "12px",
@@ -66,7 +66,7 @@ export default function WeatherWidget({ weatherData }) {
             sx={{
                 position: "fixed",
                 top: 20,
-                right: 24,
+                right: 120,
                 zIndex: 1000,
             }}
         >
@@ -141,7 +141,7 @@ export default function WeatherWidget({ weatherData }) {
                             }
                         }}
                     >
-                        <MinimizeIcon fontSize="small" />
+                        <CloseFullscreenIcon fontSize="small" />
                     </IconButton>
                 </Box>
 
@@ -234,7 +234,7 @@ export default function WeatherWidget({ weatherData }) {
                         )}
                     </Box>
 
-                    {/* 날짜/시간 정보 */}
+                    {/* 날짜/시간 정보
                     {weatherData.date && weatherData.time && (
                         <Box
                             sx={{
@@ -310,7 +310,7 @@ export default function WeatherWidget({ weatherData }) {
                                 </Typography>
                             </Box>
                         </Box>
-                    )}
+                    )} */}
                 </Box>
             </Paper>
         </Box>

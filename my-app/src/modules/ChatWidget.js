@@ -69,10 +69,10 @@ function ChatWidget({ botMessage, infoMessage }) {
       elevation={12}
       sx={{
         position: "fixed",
-        right: 12,
+        right: 16,
         bottom: 8,
         width: 400,
-        height: 500,
+        height: 550,
         borderRadius: "20px",
         overflow: "hidden",
         display: "flex",
@@ -81,7 +81,7 @@ function ChatWidget({ botMessage, infoMessage }) {
           duration: 400,
           easing: theme.transitions.easing.easeInOut
         }),
-        transform: isOpen ? "translateY(0) scale(1)" : "translateY(calc(100% - 70px)) scale(0.98)",
+        transform: isOpen ? "translateY(0) scale(1)" : "translateY(calc(100% - 70px))",
         zIndex: 1300,
         bgcolor: "background.paper",
         boxShadow: isOpen
@@ -120,13 +120,13 @@ function ChatWidget({ botMessage, infoMessage }) {
         </Avatar>
         <Box sx={{ flex: 1 }}>
           <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
-            점수 측정 AI 어시스턴트
+            만족도 분석 AI 어시스턴트
           </Typography>
           <Typography variant="caption" sx={{ opacity: 0.9, fontSize: "0.75rem" }}>
             실시간 혼잡도 & 주변환경 기반 분석
           </Typography>
         </Box>
-        <Chip
+        {/* <Chip
           label={isOpen ? "최소화" : "채팅"}
           size="small"
           sx={{
@@ -136,7 +136,7 @@ function ChatWidget({ botMessage, infoMessage }) {
             mr: 1,
             fontSize: "0.7rem",
           }}
-        />
+        /> */}
         <IconButton
           size="small"
           sx={{
