@@ -165,7 +165,7 @@ function App() {
 
   // 역 위치 로딩
   useEffect(() => {
-    loadCSV("http://localhost:8080/api/data/stations").then((data) => {
+    loadCSV("http://localhost:8081/api/data/stations").then((data) => {
       const mappedData = data.map(item => ({
         ...item,
         name: item.stationName
@@ -181,7 +181,7 @@ function App() {
     // 화면에는 selectedTime(10:58)을 유지하고,
     // 서버 요청용 URL 만들 때만 snapTo30Min을 써서 11:00으로 변환함.
     const apiTime = snapTo30Min(selectedTime);
-    const url = `http://localhost:8080/api/data/congestion/time?dayType=${selectedDay}&slotTime=${apiTime}`;
+    const url = `http://localhost:8081/api/data/congestion/time?dayType=${selectedDay}&slotTime=${apiTime}`;
 
     console.log(`🔗 [혼잡도 API 요청]`);
     console.log(`   URL: ${url}`);
@@ -242,7 +242,7 @@ function App() {
 
       console.log('[LLM API 요청 데이터]', { date: formattedDate, time: formattedTime });
 
-      const res = await fetch("http://localhost:8080/api/info", {
+      const res = await fetch("http://localhost:8081/api/info", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
