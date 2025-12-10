@@ -29,11 +29,11 @@ export default function Sidebar({
 
   function getDayType() {
     const today = new Date();
-    const day = today.getDay(); 
+    const day = today.getDay();
     // 0: 일요일, 1: 월요일, ..., 5: 금요일, 6: 토요일
 
     if (day === 6) return "토요일";
-    if (day >= 1 && day <= 5) return "평일"; 
+    if (day >= 1 && day <= 5) return "평일";
     if (day === 0) return "일요일"; // 필요하면 추가
   }
 
@@ -56,7 +56,7 @@ export default function Sidebar({
   useEffect(() => {
     onChangeInfo(selectedTime, selectedDay, selectedRouteAPI, mapType)
   }, [selectedTime, selectedDay, selectedRouteAPI, mapType]);
-  
+
   return (
     <>
       <Box
@@ -81,7 +81,7 @@ export default function Sidebar({
 
         {activeMenu == "menu" && (
           <>
-          <h3>메뉴</h3>
+            <h3>메뉴</h3>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, width: '100%' }}>
               <FormControl sx={{ flex: 1 }}>
                 <InputLabel>경로 API</InputLabel>
@@ -98,25 +98,25 @@ export default function Sidebar({
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, width: '100%' }}>
               <FormControl sx={{ flex: 1 }}>
-                  <InputLabel>지도 유형</InputLabel>
-                  <Select
-                    value={mapType}
-                    label="지도 유형"
-                    onChange={(e) => setMapType(e.target.value)}
-                    sx={{ height: 36, width: '100%', boxSizing: 'border-box' }}
-                  >
-                    <MenuItem value="normal">일반 지도</MenuItem>
-                    <MenuItem value="aerial">위성 지도</MenuItem>
-                  </Select>
-                </FormControl>
-              </Box>
+                <InputLabel>지도 유형</InputLabel>
+                <Select
+                  value={mapType}
+                  label="지도 유형"
+                  onChange={(e) => setMapType(e.target.value)}
+                  sx={{ height: 36, width: '100%', boxSizing: 'border-box' }}
+                >
+                  <MenuItem value="normal">일반 지도</MenuItem>
+                  <MenuItem value="aerial">위성 지도</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
           </>
         )}
 
         {activeMenu === "search" && (
           <>
-          <h3>역 검색</h3>
-          <SearchBox markers={markers} onSelect={handleSelectStation} />
+            <h3>역 검색</h3>
+            <SearchBox markers={markers} onSelect={handleSelectStation} />
           </>
         )}
 
@@ -160,25 +160,25 @@ export default function Sidebar({
                 }}
               />
               <Tooltip title="현재 시간으로 설정" arrow>
-              <IconButton
-                onClick={getcurt}
-                color="primary"
-                sx={{
-                  width: 36,
-                  height: 36,
-                  p: 0,
-                  border: '1px solid #ccc',
-                  borderRadius: '8px',
-                  flexShrink: 0, // ✅ 버튼은 크기 고정
-                }}
-              >
-                <AccessTimeIcon sx={{ fontSize: 22 }} />
-              </IconButton>
+                <IconButton
+                  onClick={getcurt}
+                  color="primary"
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    p: 0,
+                    border: '1px solid #ccc',
+                    borderRadius: '8px',
+                    flexShrink: 0, // ✅ 버튼은 크기 고정
+                  }}
+                >
+                  <AccessTimeIcon sx={{ fontSize: 22 }} />
+                </IconButton>
               </Tooltip>
             </Box>
           </Box>
         )}
-        
+
       </Box>
 
       <Box
@@ -196,7 +196,7 @@ export default function Sidebar({
           flexDirection: "column",
         }}
       >
-       <Box
+        <Box
           sx={{
             display: "flex",
             flexDirection: "column",
@@ -234,6 +234,6 @@ export default function Sidebar({
           </Tooltip>
         </Box>
       </Box>
-      </>
+    </>
   );
 };

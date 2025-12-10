@@ -111,7 +111,7 @@ export default function SideMenu({
             id: 'menu',
             label: '맵 설정',
             icon: <MenuIcon />,
-            description: '지도 및 경로 API 설정',
+            description: '지도 서비스 시각화 설정',
         },
         {
             id: 'time',
@@ -254,7 +254,7 @@ export default function SideMenu({
                         <IconBox width={36} height={36}>
                             <MenuIcon sx={{ fontSize: 20 }} />
                         </IconBox>
-                        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '0.3px' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.25rem', letterSpacing: '0.3px' }}>
                             맵 설정
                         </Typography>
                     </Stack>
@@ -274,11 +274,11 @@ export default function SideMenu({
                         background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)'
                     }}>
                         <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
-                            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+                            <Stack direction="row" alignItems="center" spacing={1.8} sx={{ mb: 2.5 }}>
                                 <IconBox width={40} height={40} bgcolor="#10b981">
                                     <AltRouteIcon sx={{ fontSize: 22 }} />
                                 </IconBox>
-                                <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1rem', lineHeight: 1.3 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1.08rem', lineHeight: 1.3 }}>
                                     경로 API
                                 </Typography>
                             </Stack>
@@ -314,11 +314,11 @@ export default function SideMenu({
                         background: 'linear-gradient(135deg, #ffffff 0%, #faf5ff 100%)'
                     }}>
                         <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
-                            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+                            <Stack direction="row" alignItems="center" spacing={1.8} sx={{ mb: 2 }}>
                                 <IconBox width={40} height={40} bgcolor="#8b5cf6">
                                     <LayersIcon sx={{ fontSize: 22 }} />
                                 </IconBox>
-                                <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1rem', lineHeight: 1.3 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1.08rem', lineHeight: 1.3 }}>
                                     지도 유형
                                 </Typography>
                             </Stack>
@@ -353,12 +353,12 @@ export default function SideMenu({
                         background: 'linear-gradient(135deg, #ffffff 0%, #eff6ff 100%)'
                     }}>
                         <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
-                            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2.5 }}>
+                            <Stack direction="row" alignItems="center" spacing={1.8} sx={{ mb: 2.5 }}>
                                 <IconBox width={40} height={40} bgcolor="#3b82f6">
                                     <OpacityIcon sx={{ fontSize: 22 }} />
                                 </IconBox>
                                 <Box sx={{ flex: 1 }}>
-                                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1rem', lineHeight: 1.3 }}>
+                                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1.08rem', lineHeight: 1.3 }}>
                                         날씨 레이어 시각화
                                     </Typography>
                                 </Box>
@@ -546,7 +546,7 @@ export default function SideMenu({
                         <IconBox width={36} height={36}>
                             <SearchIcon sx={{ fontSize: 20 }} />
                         </IconBox>
-                        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '0.3px' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.25rem', letterSpacing: '0.3px' }}>
                             역 검색
                         </Typography>
                     </Stack>
@@ -564,11 +564,11 @@ export default function SideMenu({
                         background: 'linear-gradient(135deg, #ffffff 0%, #eff6ff 100%)'
                     }}>
                         <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
-                            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2.5 }}>
+                            <Stack direction="row" alignItems="center" spacing={1.8} sx={{ mb: 2.5 }}>
                                 <IconBox width={40} height={40} bgcolor="#3b82f6">
                                     <LocationOnIcon sx={{ fontSize: 22 }} />
                                 </IconBox>
-                                <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1rem', lineHeight: 1.3 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1.08rem', lineHeight: 1.3 }}>
                                     역 이름 검색
                                 </Typography>
                             </Stack>
@@ -614,7 +614,7 @@ export default function SideMenu({
                         <IconBox width={36} height={36}>
                             <EventNoteIcon sx={{ fontSize: 20 }} />
                         </IconBox>
-                        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '0.3px' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.25rem', letterSpacing: '0.3px' }}>
                             시점 설정
                         </Typography>
                     </Stack>
@@ -634,11 +634,11 @@ export default function SideMenu({
                         background: 'linear-gradient(135deg, #ffffff 0%, #fdf2f8 100%)'
                     }}>
                         <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
-                            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+                            <Stack direction="row" alignItems="center" spacing={1.8} sx={{ mb: 2 }}>
                                 <IconBox width={40} height={40} bgcolor="#ec4899">
                                     <EventNoteIcon sx={{ fontSize: 22 }} />
                                 </IconBox>
-                                <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1rem', lineHeight: 1.3 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1.08rem', lineHeight: 1.3 }}>
                                     날짜 선택
                                 </Typography>
                             </Stack>
@@ -682,11 +682,11 @@ export default function SideMenu({
                         background: 'linear-gradient(135deg, #ffffff 0%, #ecfeff 100%)'
                     }}>
                         <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
-                            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+                            <Stack direction="row" alignItems="center" spacing={1.8} sx={{ mb: 2 }}>
                                 <IconBox width={40} height={40} bgcolor="#06b6d4">
                                     <WatchLaterIcon sx={{ fontSize: 22 }} />
                                 </IconBox>
-                                <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1rem', lineHeight: 1.3 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1.08rem', lineHeight: 1.3 }}>
                                     시간 선택
                                 </Typography>
                             </Stack>

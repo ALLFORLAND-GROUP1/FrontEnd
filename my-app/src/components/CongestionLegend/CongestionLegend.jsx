@@ -18,7 +18,7 @@ const CongestionLegend = ({ title = '실시간 혼잡도', unit = '%' }) => {
       <Box
         sx={{
           position: 'absolute',
-          bottom: 10,
+          bottom: 8,
           right: 431,
           zIndex: 1000,
         }}
@@ -47,7 +47,7 @@ const CongestionLegend = ({ title = '실시간 혼잡도', unit = '%' }) => {
       elevation={8}
       sx={{
         position: 'absolute',
-        bottom: 12,
+        bottom: 8,
         right: 435,
         zIndex: 1000,
         padding: '18px 22px',

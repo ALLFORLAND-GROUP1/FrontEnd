@@ -143,7 +143,7 @@ function App() {
   const [mapType, setMapType] = useState('normal');
   const [weatherData, setWeatherData] = useState(null); // 날씨 데이터
   const [weatherOpacity, setWeatherOpacity] = useState(0.35); // WMS 레이어 투명도
-  const [weatherVisible, setWeatherVisible] = useState(true); // WMS 레이어 표시 여부
+  const [weatherVisible, setWeatherVisible] = useState(false); // WMS 레이어 표시 여부
 
   const myPosRef = useRef(myPos);
   const routeAPIRef = useRef(selectedRouteAPI)

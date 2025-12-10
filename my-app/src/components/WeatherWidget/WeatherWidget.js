@@ -85,7 +85,7 @@ export default function WeatherWidget({ weatherData }) {
                     sx={{
                         background: "linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)",
                         px: 2.5,
-                        py: 1.8,
+                        py: 1.6,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between'
@@ -153,7 +153,7 @@ export default function WeatherWidget({ weatherData }) {
                             flexDirection: 'column',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            py: 2.5,
+                            py: 2,
                             background: 'linear-gradient(to bottom, rgba(96,165,250,0.1) 0%, transparent 100%)'
                         }}
                     >
@@ -166,21 +166,23 @@ export default function WeatherWidget({ weatherData }) {
                                 WebkitTextFillColor: 'transparent',
                                 lineHeight: 1,
                                 mb: 1,
-                                fontSize: '2.8rem'
+                                fontSize: '2.8rem',
+                                position: 'relative',
+                                left: '7.5px',
                             }}
                         >
-                            {weatherData.temperature}°
+                            {"" + weatherData.temperature}°
                         </Typography>
                         {weatherData.weather && (
                             <Chip
                                 label={weatherData.weather}
                                 size="small"
                                 sx={{
-                                    fontWeight: 600,
+                                    fontWeight: 500,
                                     bgcolor: 'rgba(59, 130, 246, 0.1)',
                                     color: '#2563eb',
-                                    border: '1px solid rgba(59, 130, 246, 0.2)',
-                                    fontSize: '0.7rem',
+                                    border: '0.5px solid rgba(59, 130, 246, 0.5)',
+                                    fontSize: '0.8rem',
                                     height: '24px'
                                 }}
                             />
@@ -189,7 +191,7 @@ export default function WeatherWidget({ weatherData }) {
                 )}
 
                 {/* 상세 정보 그리드 */}
-                <Box sx={{ px: 2.5, pb: 2.5 }}>
+                <Box sx={{ px: 2.5, pb: 2 }}>
                     <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
                         {weatherData.feelsLike && (
                             <Box
@@ -200,13 +202,13 @@ export default function WeatherWidget({ weatherData }) {
                                     border: '1px solid rgba(239, 68, 68, 0.15)',
                                 }}
                             >
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, mb: 0.4 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0, mb: 0.4, mr: 0.8, justifyContent: 'center' }}>
                                     <ThermostatIcon sx={{ fontSize: 18, color: '#ef4444' }} />
-                                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, fontSize: '0.7rem' }}>
+                                    <Typography variant="caption" sx={{ color: '#5c6067', fontWeight: 600, fontSize: '0.8rem' }}>
                                         체감온도
                                     </Typography>
                                 </Box>
-                                <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e293b', fontSize: '1.1rem' }}>
+                                <Typography variant="h6" sx={{ textAlign: 'center', fontWeight: 700, color: '#1e293b', fontSize: '1.1rem' }}>
                                     {weatherData.feelsLike}°C
                                 </Typography>
                             </Box>
@@ -221,13 +223,13 @@ export default function WeatherWidget({ weatherData }) {
                                     border: '1px solid rgba(59, 130, 246, 0.15)',
                                 }}
                             >
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, mb: 0.4 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0, mb: 0.4, mr: 0.8, justifyContent: 'center' }}>
                                     <OpacityIcon sx={{ fontSize: 18, color: '#3b82f6' }} />
-                                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, fontSize: '0.7rem' }}>
+                                    <Typography variant="caption" sx={{ color: '#5c6067', fontWeight: 600, fontSize: '0.8rem' }}>
                                         습도
                                     </Typography>
                                 </Box>
-                                <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e293b', fontSize: '1.1rem' }}>
+                                <Typography variant="h6" sx={{ textAlign: 'center', fontWeight: 700, color: '#1e293b', fontSize: '1.1rem' }}>
                                     {weatherData.humidity}%
                                 </Typography>
                             </Box>
